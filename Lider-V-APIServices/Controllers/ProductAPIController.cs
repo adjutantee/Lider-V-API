@@ -18,20 +18,38 @@ namespace Lider_V_APIServices.Controllers
         }
 
         [HttpGet]
-        public async Task<object> Get()
+        public async Task<object> GetProducts()
         {
             try
             {
                 IEnumerable<ProductDto> productDtos = await _productRepository.GetProductsAsync();
                 _response.Result = productDtos;
+                return StatusCode(200, _response);
             }
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
                 _response.ErrorMessages = new List<string> { ex.ToString() };
+                return StatusCode(500, _response);
             }
+        }
 
-            return _response;
+        [HttpGet]
+        [Route("favorites")]
+        public async Task<object> GetFavoriteProducts()
+        {
+            try
+            {
+                IEnumerable<ProductDto> favoriteProducts = await _productRepository.GetFavoriteProductsAsync();
+                _response.Result = favoriteProducts;
+                return StatusCode(200, _response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages = new List<string> { ex.ToString() };
+                return StatusCode(500, _response);
+            }
         }
 
         [HttpGet]
@@ -42,31 +60,49 @@ namespace Lider_V_APIServices.Controllers
             {
                 ProductDto productDto = await _productRepository.GetProductByIdAsync(id);
                 _response.Result = productDto;
+                return StatusCode(200, _response);
             }
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
                 _response.ErrorMessages = new List<string> { ex.ToString() };
+                return StatusCode(500, _response);
             }
-
-            return _response;
         }
 
         [HttpPost]
-        public async Task<object> Post([FromBody] ProductDto productDto)
+        [Route("toggle-favorite/{id}")]
+        public async Task<object> ToggleFavoriteStatus(int id)
+        {
+            try
+            {
+                await _productRepository.ToggleFavoriteStatusAsync(id);
+                _response.Result = "Cтатус избранного установлен успешно";
+                return StatusCode(200, _response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages = new List<string> { ex.ToString() };
+                return StatusCode(500, _response);
+            }
+        }
+
+        [HttpPost]
+        public async Task<object> Post([FromForm] ProductDto productDto)
         {
             try
             {
                 ProductDto model = await _productRepository.CreateUptateProductAsync(productDto);
                 _response.Result = model;
+                return StatusCode(200, _response);
             }
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
                 _response.ErrorMessages = new List<string> { ex.ToString() };
+                return StatusCode(500, _response);
             }
-
-            return _response;
         }
 
         [HttpPut]
@@ -76,14 +112,68 @@ namespace Lider_V_APIServices.Controllers
             {
                 ProductDto model = await _productRepository.CreateUptateProductAsync(productDto);
                 _response.Result = model;
+                return StatusCode(200, _response);
             }
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
                 _response.ErrorMessages = new List<string> { ex.ToString() };
+                return StatusCode(500, _response);
             }
+        }
 
-            return _response;
+        [HttpGet]
+        [Route("by-category/{categoryId}")]
+        public async Task<object> GetProductsByCategory(int categoryId)
+        {
+            try
+            {
+                IEnumerable<ProductDto> productsByCategory = await _productRepository.GetProductsByCategoryId(categoryId);
+                _response.Result = productsByCategory;
+                return StatusCode(200, _response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages = new List<string> { ex.ToString() };
+                return StatusCode(500, _response);
+            }
+        }
+
+        [HttpPost]
+        [Route("add-to-category/{productId}/{categoryId}")]
+        public async Task<object> AddProductToCategory(int productId, int categoryId)
+        {
+            try
+            {
+                await _productRepository.AddProductToCategoryAsync(productId, categoryId);
+                _response.Result = "Продукт успешно добавлен в категорию";
+                return StatusCode(200, _response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages = new List<string> { ex.ToString() };
+                return StatusCode(500, _response);
+            }
+        }
+
+        [HttpPost]
+        [Route("remove-from-category/{productId}/{categoryId}")]
+        public async Task<object> RemoveProductFromCategory(int productId, int categoryId)
+        {
+            try
+            {
+                await _productRepository.RemoveProductFromCategoryAsync(productId, categoryId);
+                _response.Result = "Продукт успешно удален из категории";
+                return StatusCode(200, _response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages = new List<string> { ex.ToString() };
+                return StatusCode(500, _response);
+            }
         }
 
         [HttpDelete]
@@ -93,14 +183,32 @@ namespace Lider_V_APIServices.Controllers
             {
                 bool isSuccess = await _productRepository.DeleteProduct(id);
                 _response.Result = isSuccess;
+                return StatusCode(200, _response);
             }
             catch (Exception ex)
             {
                 _response.IsSuccess = false;
                 _response.ErrorMessages = new List<string> { ex.ToString() };
+                return StatusCode(500, _response);
             }
+        }
 
-            return _response;
+        [HttpDelete]
+        [Route("delete-favorite/{id}")]
+        public async Task<object> DeleteFavoriteProduct(int id)
+        {
+            try
+            {
+                bool isSuccess = await _productRepository.RemoveFromFavoritesAsync(id);
+                _response.Result = isSuccess;
+                return StatusCode(200, _response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages = new List<string> { ex.ToString() };
+                return StatusCode(500, _response);
+            }
         }
     }
 }

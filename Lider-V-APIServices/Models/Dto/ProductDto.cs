@@ -7,8 +7,11 @@
         public string ProductCategoryName { get; set; }
         public decimal ProductPrice { get; set; }
         public string ProductDescription { get; set; }
-        public string ProductImage { get; set; }
-        public string ProductWeight { get; set; }
-        public double ProductQuantity { get; set; }
+        public byte[] ProductImage { get; set; }
+        public double ProductWeight { get; set; }
+        public int ProductQuantity { get; set; }
+        public bool IsFavorite { get; set; }
+        public int? CategoryId { get; set; }
+        public Category Category { get; set; }
     }
 }
