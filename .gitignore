@@ -364,3 +364,4 @@ FodyWeavers.xsd
 
 # Other files
 appsettings.Development.json
+Program.cs
