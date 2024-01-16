@@ -80,6 +80,14 @@ namespace Lider_V_APIServices.Controllers
                     }
                 }
 
+                if (string.IsNullOrWhiteSpace(register.RegisterPassword) || register.RegisterPassword.Length < 4
+                || !register.RegisterPassword.Any(char.IsUpper) || !register.RegisterPassword.Any(char.IsDigit))
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Пароль должен содержать как минимум 4 символа, хотя бы одну заглавную букву и одну цифру.";
+                    return StatusCode(400, _response);
+                }
+
                 var user = new User
                 {
                     Email = register.RegisterEmail,

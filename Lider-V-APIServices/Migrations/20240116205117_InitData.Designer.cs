@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Lider_V_APIServices.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240115222740_InitNewData")]
-    partial class InitNewData
+    [Migration("20240116205117_InitData")]
+    partial class InitData
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -95,6 +95,7 @@ namespace Lider_V_APIServices.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("CategoryId")
+                        .IsRequired()
                         .HasColumnType("integer");
 
                     b.Property<bool>("IsFavorite")
@@ -355,7 +356,9 @@ namespace Lider_V_APIServices.Migrations
                 {
                     b.HasOne("Lider_V_APIServices.Models.Category", "Category")
                         .WithMany()
-                        .HasForeignKey("CategoryId");
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Category");
                 });

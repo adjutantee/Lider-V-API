@@ -6,7 +6,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Lider_V_APIServices.Migrations
 {
-    public partial class InitNewData : Migration
+    public partial class InitData : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -196,7 +196,7 @@ namespace Lider_V_APIServices.Migrations
                     ProductWeight = table.Column<double>(type: "double precision", nullable: false),
                     ProductQuantity = table.Column<int>(type: "integer", nullable: false),
                     IsFavorite = table.Column<bool>(type: "boolean", nullable: false),
-                    CategoryId = table.Column<int>(type: "integer", nullable: true)
+                    CategoryId = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -205,7 +205,8 @@ namespace Lider_V_APIServices.Migrations
                         name: "FK_Products_Categories_CategoryId",
                         column: x => x.CategoryId,
                         principalTable: "Categories",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(

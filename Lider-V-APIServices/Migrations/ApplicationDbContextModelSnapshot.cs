@@ -93,6 +93,7 @@ namespace Lider_V_APIServices.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("CategoryId")
+                        .IsRequired()
                         .HasColumnType("integer");
 
                     b.Property<bool>("IsFavorite")
@@ -353,7 +354,9 @@ namespace Lider_V_APIServices.Migrations
                 {
                     b.HasOne("Lider_V_APIServices.Models.Category", "Category")
                         .WithMany()
-                        .HasForeignKey("CategoryId");
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Category");
                 });
