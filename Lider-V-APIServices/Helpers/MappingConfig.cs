@@ -14,6 +14,7 @@ namespace Lider_V_APIServices.Helpers
                 config.CreateMap<CartHeader, CartHeaderDto>().ReverseMap();
                 config.CreateMap<CartDetails, CartDetailsDto>().ReverseMap();
                 config.CreateMap<Cart, CartDto>().ReverseMap();
+                config.CreateMap<Category, CategoryDto>().ReverseMap();
             });
 
             return mappingConfig;
