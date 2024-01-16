@@ -40,7 +40,7 @@ namespace Lider_V_APIServices.Controllers
                 }
                 else
                 {
-                    var token = _accountRepository.GenerateJwtTokenByUser(user);
+                    var token = await _accountRepository.GenerateJwtTokenByUser(user);
                     _response.Result = token;
                     return StatusCode(200, _response);
                 }

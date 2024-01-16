@@ -20,7 +20,7 @@ namespace Lider_V_APIServices.Services
 
         public Task<string> GenerateJwtTokenByUser(User user)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(KeyGenerator.Generate256BitKey()));
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtAuth:Key"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
@@ -33,26 +33,13 @@ namespace Lider_V_APIServices.Services
                 issuer: _configuration["JwtAuth:Issuer"],
                 audience: _configuration["JwtAuth:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddDays(7),
+                expires: DateTime.UtcNow.AddHours(7),
                 signingCredentials: credentials
             );
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
             return Task.FromResult(tokenString);
-        }
-    }
-
-    public class KeyGenerator
-    {
-        public static string Generate256BitKey()
-        {
-            using (var cryptoProvider = new RNGCryptoServiceProvider())
-            {
-                byte[] randomBytes = new byte[32];
-                cryptoProvider.GetBytes(randomBytes);
-                return Convert.ToBase64String(randomBytes);
-            }
         }
     }
 }
