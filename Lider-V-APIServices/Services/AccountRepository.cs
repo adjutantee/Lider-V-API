@@ -1,8 +1,11 @@
 ﻿using Lider_V_APIServices.Models;
 using Microsoft.IdentityModel.Tokens;
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Lider_V_APIServices.Services
 {
@@ -17,7 +20,7 @@ namespace Lider_V_APIServices.Services
 
         public Task<string> GenerateJwtTokenByUser(User user)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtAuth:Key"]));
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(KeyGenerator.Generate256BitKey()));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
@@ -37,6 +40,19 @@ namespace Lider_V_APIServices.Services
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
             return Task.FromResult(tokenString);
+        }
+    }
+
+    public class KeyGenerator
+    {
+        public static string Generate256BitKey()
+        {
+            using (var cryptoProvider = new RNGCryptoServiceProvider())
+            {
+                byte[] randomBytes = new byte[32];
+                cryptoProvider.GetBytes(randomBytes);
+                return Convert.ToBase64String(randomBytes);
+            }
         }
     }
 }
