@@ -1,5 +1,8 @@
-﻿using Lider_V_APIServices.Models.Dto;
+﻿using Lider_V_APIServices.Models;
+using Lider_V_APIServices.Models.Dto;
 using Lider_V_APIServices.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Lider_V_APIServices.Controllers
@@ -10,11 +13,13 @@ namespace Lider_V_APIServices.Controllers
     {
         protected ResponseDto _response;
         private IProductRepository _productRepository;
+        private readonly UserManager<User> _userManager;
 
-        public ProductAPIController(IProductRepository productRepository)
+        public ProductAPIController(IProductRepository productRepository, UserManager<User> userManager)
         {
             this._response = new ResponseDto();
             _productRepository = productRepository;
+            _userManager = userManager;
         }
 
         [HttpGet]
@@ -36,6 +41,7 @@ namespace Lider_V_APIServices.Controllers
 
         [HttpGet]
         [Route("favorites")]
+        [Authorize]
         public async Task<object> GetFavoriteProducts()
         {
             try
@@ -54,6 +60,7 @@ namespace Lider_V_APIServices.Controllers
 
         [HttpGet]
         [Route("{id}")]
+        [Authorize]
         public async Task<object> Get(int id)
         {
             try
@@ -72,6 +79,7 @@ namespace Lider_V_APIServices.Controllers
 
         [HttpPost]
         [Route("toggle-favorite/{id}")]
+        [Authorize]
         public async Task<object> ToggleFavoriteStatus(int id)
         {
             try
@@ -89,12 +97,26 @@ namespace Lider_V_APIServices.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<object> Post([FromForm] ProductDto productDto)
         {
             try
             {
-                ProductDto model = await _productRepository.CreateUptateProductAsync(productDto);
-                _response.Result = model;
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Пользователь не авторизован или не найден";
+                    return StatusCode(401, _response);
+                }
+
+                if (await _userManager.IsInRoleAsync(user, Constants.AdminRoleName))
+                {
+                    ProductDto model = await _productRepository.CreateUptateProductAsync(productDto);
+                    _response.Result = model;
+                }
+
                 return StatusCode(200, _response);
             }
             catch (Exception ex)
@@ -106,12 +128,26 @@ namespace Lider_V_APIServices.Controllers
         }
 
         [HttpPut]
+        [Authorize]
         public async Task<object> Put([FromBody] ProductDto productDto)
         {
             try
             {
-                ProductDto model = await _productRepository.CreateUptateProductAsync(productDto);
-                _response.Result = model;
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Пользователь не авторизован или не найден";
+                    return StatusCode(401, _response);
+                }
+
+                if (await _userManager.IsInRoleAsync(user, Constants.AdminRoleName))
+                {
+                    ProductDto model = await _productRepository.CreateUptateProductAsync(productDto);
+                    _response.Result = model;
+                }
+
                 return StatusCode(200, _response);
             }
             catch (Exception ex)
@@ -142,12 +178,26 @@ namespace Lider_V_APIServices.Controllers
 
         [HttpPost]
         [Route("add-to-category/{productId}/{categoryId}")]
+        [Authorize]
         public async Task<object> AddProductToCategory(int productId, int categoryId)
         {
             try
             {
-                await _productRepository.AddProductToCategoryAsync(productId, categoryId);
-                _response.Result = "Продукт успешно добавлен в категорию";
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Пользователь не авторизован или не найден";
+                    return StatusCode(401, _response);
+                }
+
+                if (await _userManager.IsInRoleAsync(user, Constants.AdminRoleName))
+                {
+                    await _productRepository.AddProductToCategoryAsync(productId, categoryId);
+                    _response.Result = "Продукт успешно добавлен в категорию";
+                }
+                
                 return StatusCode(200, _response);
             }
             catch (Exception ex)
@@ -160,12 +210,26 @@ namespace Lider_V_APIServices.Controllers
 
         [HttpPost]
         [Route("remove-from-category/{productId}/{categoryId}")]
+        [Authorize]
         public async Task<object> RemoveProductFromCategory(int productId, int categoryId)
         {
             try
             {
-                await _productRepository.RemoveProductFromCategoryAsync(productId, categoryId);
-                _response.Result = "Продукт успешно удален из категории";
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Пользователь не авторизован или не найден";
+                    return StatusCode(401, _response);
+                }
+
+                if (await _userManager.IsInRoleAsync(user, Constants.AdminRoleName))
+                {
+                    await _productRepository.RemoveProductFromCategoryAsync(productId, categoryId);
+                    _response.Result = "Продукт успешно удален из категории";
+                }
+                
                 return StatusCode(200, _response);
             }
             catch (Exception ex)
@@ -177,12 +241,26 @@ namespace Lider_V_APIServices.Controllers
         }
 
         [HttpDelete]
+        [Authorize]
         public async Task<object> Delete(int id)
         {
             try
             {
-                bool isSuccess = await _productRepository.DeleteProduct(id);
-                _response.Result = isSuccess;
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Пользователь не авторизован или не найден";
+                    return StatusCode(401, _response);
+                }
+
+                if (await _userManager.IsInRoleAsync(user, Constants.AdminRoleName))
+                {
+                    bool isSuccess = await _productRepository.DeleteProduct(id);
+                    _response.Result = isSuccess;
+                }
+                
                 return StatusCode(200, _response);
             }
             catch (Exception ex)
@@ -195,12 +273,26 @@ namespace Lider_V_APIServices.Controllers
 
         [HttpDelete]
         [Route("delete-favorite/{id}")]
+        [Authorize]
         public async Task<object> DeleteFavoriteProduct(int id)
         {
             try
             {
-                bool isSuccess = await _productRepository.RemoveFromFavoritesAsync(id);
-                _response.Result = isSuccess;
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Пользователь не авторизован или не найден";
+                    return StatusCode(401, _response);
+                }
+
+                if (await _userManager.IsInRoleAsync(user, Constants.AdminRoleName))
+                {
+                    bool isSuccess = await _productRepository.RemoveFromFavoritesAsync(id);
+                    _response.Result = isSuccess;
+                }
+                
                 return StatusCode(200, _response);
             }
             catch (Exception ex)

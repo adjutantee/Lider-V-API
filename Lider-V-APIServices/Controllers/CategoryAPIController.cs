@@ -1,20 +1,26 @@
-﻿using Lider_V_APIServices.Models.Dto;
+﻿using Lider_V_APIServices.Models;
+using Lider_V_APIServices.Models.Dto;
 using Lider_V_APIServices.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Lider_V_APIServices.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class CategoryAPIController : Controller
     {
         private readonly ICategoryRepository _categoryRepository;
         protected ResponseDto _response;
+        private readonly UserManager<User> _userManager;
 
-        public CategoryAPIController(ICategoryRepository categoryRepository)
+        public CategoryAPIController(ICategoryRepository categoryRepository, UserManager<User> userManger)
         {
             _categoryRepository = categoryRepository;
             this._response = new ResponseDto();
+            _userManager = userManger;
         }
 
         [HttpGet]
@@ -22,6 +28,15 @@ namespace Lider_V_APIServices.Controllers
         {
             try
             {
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Пользователь не авторизован или не найден";
+                    return StatusCode(401, _response);
+                }
+
                 IEnumerable<CategoryDto> categories = await _categoryRepository.GetCategoriesAsync();
                 _response.Result = categories;
                 return StatusCode(200, _response);
@@ -39,6 +54,15 @@ namespace Lider_V_APIServices.Controllers
         {
             try
             {
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Пользователь не авторизован или не найден";
+                    return StatusCode(401, _response);
+                }
+
                 CategoryDto category = await _categoryRepository.GetCategoryByIdAsync(id);
 
                 if (category == null)
@@ -64,6 +88,15 @@ namespace Lider_V_APIServices.Controllers
         {
             try
             {
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Пользователь не авторизован или не найден";
+                    return StatusCode(401, _response);
+                }
+
                 CategoryDto addedCategory = await _categoryRepository.AddCategoryAsync(categoryDto);
                 _response.Result = addedCategory;
                 return StatusCode(200, _response);
@@ -81,6 +114,15 @@ namespace Lider_V_APIServices.Controllers
         {
             try
             {
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Пользователь не авторизован или не найден";
+                    return StatusCode(401, _response);
+                }
+
                 bool isRemoved = await _categoryRepository.RemoveCategoryAsync(id);
 
                 if (!isRemoved)

@@ -1,5 +1,7 @@
-﻿using Lider_V_APIServices.Models.Dto;
+﻿using Lider_V_APIServices.Models;
+using Lider_V_APIServices.Models.Dto;
 using Lider_V_APIServices.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Lider_V_APIServices.Controllers
@@ -10,11 +12,13 @@ namespace Lider_V_APIServices.Controllers
     {
         private ICartRepository _cartRepository;
         protected ResponseDto _response;
+        private readonly UserManager<User> _userManager;
 
-        public CartAPIController(ICartRepository cartRepository)
+        public CartAPIController(ICartRepository cartRepository, UserManager<User> userManager)
         {
             _cartRepository = cartRepository;
             this._response = new ResponseDto();
+            this._userManager = userManager;
         }
 
         [HttpGet("GetCart/{userId}")]
@@ -22,6 +26,15 @@ namespace Lider_V_APIServices.Controllers
         {
             try
             {
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Пользователь не авторизован или не найден";
+                    return StatusCode(401, _response);
+                }
+
                 CartDto cartDto = await _cartRepository.GetCartByUserId(userId);
                 _response.Result = cartDto;
                 return StatusCode(200, _response);
@@ -41,6 +54,15 @@ namespace Lider_V_APIServices.Controllers
         {
             try
             {
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Пользователь не авторизован или не найден";
+                    return StatusCode(401, _response);
+                }
+
                 CartDto cartDt = await _cartRepository.CreateUpdateCart(cartDto);
                 _response.Result = cartDt;
                 return StatusCode(200, _response);
@@ -58,6 +80,15 @@ namespace Lider_V_APIServices.Controllers
         {
             try
             {
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Пользователь не авторизован или не найден";
+                    return StatusCode(401, _response);
+                }
+
                 CartDto cartDt = await _cartRepository.CreateUpdateCart(cartDto);
                 _response.Result = cartDt;
                 return StatusCode(200, _response);
@@ -75,6 +106,15 @@ namespace Lider_V_APIServices.Controllers
         {
             try
             {
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Пользователь не авторизован или не найден";
+                    return StatusCode(401, _response);
+                }
+
                 bool isSuccess = await _cartRepository.RemoveFromCart(cartId);
                 _response.Result = isSuccess;
                 return StatusCode(200, _response);
@@ -92,6 +132,15 @@ namespace Lider_V_APIServices.Controllers
         {
             try
             {
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Пользователь не авторизован или не найден";
+                    return StatusCode(401, _response);
+                }
+
                 bool isSuccess = await _cartRepository.ClearCart(userId);
                 _response.Result = isSuccess;
                 return StatusCode(200, _response);
