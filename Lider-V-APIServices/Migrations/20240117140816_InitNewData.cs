@@ -6,7 +6,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Lider_V_APIServices.Migrations
 {
-    public partial class InitData : Migration
+    public partial class InitNewData : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -191,12 +191,11 @@ namespace Lider_V_APIServices.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     ProductName = table.Column<string>(type: "text", nullable: false),
                     ProductPrice = table.Column<decimal>(type: "numeric", nullable: false),
-                    ProductDescription = table.Column<string>(type: "text", nullable: false),
-                    ProductImage = table.Column<byte[]>(type: "bytea", nullable: false),
-                    ProductWeight = table.Column<double>(type: "double precision", nullable: false),
-                    ProductQuantity = table.Column<int>(type: "integer", nullable: false),
-                    IsFavorite = table.Column<bool>(type: "boolean", nullable: false),
-                    CategoryId = table.Column<int>(type: "integer", nullable: false)
+                    ProductDescription = table.Column<string>(type: "text", nullable: true),
+                    ProductImage = table.Column<byte[]>(type: "bytea", nullable: true),
+                    ProductWeight = table.Column<double>(type: "double precision", nullable: true),
+                    ProductQuantity = table.Column<int>(type: "integer", nullable: true),
+                    CategoryId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -205,8 +204,7 @@ namespace Lider_V_APIServices.Migrations
                         name: "FK_Products_Categories_CategoryId",
                         column: x => x.CategoryId,
                         principalTable: "Categories",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(

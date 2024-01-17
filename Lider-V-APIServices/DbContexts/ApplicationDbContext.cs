@@ -8,7 +8,7 @@ namespace Lider_V_APIServices.DbContexts
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
-
+            //Database.EnsureCreated();
         }
 
         public DbSet<Product> Products { get; set; }

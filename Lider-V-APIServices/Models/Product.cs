@@ -14,9 +14,8 @@ namespace Lider_V_APIServices.Models
         public byte[]? ProductImage { get; set; }
         public double? ProductWeight { get; set; }
         public int? ProductQuantity { get; set; }
-        public bool IsFavorite { get; set; }
         public int? CategoryId { get; set; }
         [ForeignKey("CategoryId")]
-        public Category Category { get; set; }
+        public Category? Category { get; set; }
     }
 }

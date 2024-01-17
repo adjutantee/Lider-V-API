@@ -96,6 +96,11 @@ namespace Lider_V_APIServices.Services
                 CartHeader = await _context.CartHeaders.FirstOrDefaultAsync(x => x.UserId == userId)
             };
 
+            if (cart.CartDetails == null && cart.CartHeader == null || cart.CartHeader == null)
+            {
+                return null;
+            }
+
             cart.CartDetails = _context.CartDetails
                 .Where(x => x.CartHeaderId == cart.CartHeader.CartHeaderId).Include(x => x.Product);
 

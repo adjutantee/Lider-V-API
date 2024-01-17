@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Lider_V_APIServices.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240116205117_InitData")]
-    partial class InitData
+    [Migration("20240117140816_InitNewData")]
+    partial class InitNewData
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -95,18 +95,12 @@ namespace Lider_V_APIServices.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int?>("CategoryId")
-                        .IsRequired()
                         .HasColumnType("integer");
 
-                    b.Property<bool>("IsFavorite")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("ProductDescription")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<byte[]>("ProductImage")
-                        .IsRequired()
                         .HasColumnType("bytea");
 
                     b.Property<string>("ProductName")
@@ -116,10 +110,10 @@ namespace Lider_V_APIServices.Migrations
                     b.Property<decimal>("ProductPrice")
                         .HasColumnType("numeric");
 
-                    b.Property<int>("ProductQuantity")
+                    b.Property<int?>("ProductQuantity")
                         .HasColumnType("integer");
 
-                    b.Property<double>("ProductWeight")
+                    b.Property<double?>("ProductWeight")
                         .HasColumnType("double precision");
 
                     b.HasKey("Id");
@@ -356,9 +350,7 @@ namespace Lider_V_APIServices.Migrations
                 {
                     b.HasOne("Lider_V_APIServices.Models.Category", "Category")
                         .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CategoryId");
 
                     b.Navigation("Category");
                 });

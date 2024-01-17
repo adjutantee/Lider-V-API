@@ -75,7 +75,7 @@ namespace Lider_V_APIServices.Services
 
         public async Task<IEnumerable<ProductDto>> GetFavoriteProductsAsync()
         {
-            List<Product> favoriteProducts = await _context.Products.Where(p => p.IsFavorite).ToListAsync();
+            List<Product> favoriteProducts = await _context.Products.ToListAsync();
             return _mapper.Map<List<ProductDto>>(favoriteProducts);
         }
 
@@ -108,11 +108,11 @@ namespace Lider_V_APIServices.Services
                     return false;
                 }
 
-                if (product != null && product.IsFavorite)
-                {
-                    product.IsFavorite = false;
-                    await _context.SaveChangesAsync();
-                }
+                //if (product != null && product.IsFavorite)
+                //{
+                //    product.IsFavorite = false;
+                //    await _context.SaveChangesAsync();
+                //}
 
                 return true;
             }
@@ -151,11 +151,11 @@ namespace Lider_V_APIServices.Services
         {
             Product product = await _context.Products.FindAsync(productId);
 
-            if (product != null)
-            {
-                product.IsFavorite = !product.IsFavorite;
-                await _context.SaveChangesAsync();
-            }
+            //if (product != null)
+            //{
+            //    product.IsFavorite = !product.IsFavorite;
+            //    await _context.SaveChangesAsync();
+            //}
 
             return;
         }
