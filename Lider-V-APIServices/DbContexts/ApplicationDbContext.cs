@@ -15,5 +15,6 @@ namespace Lider_V_APIServices.DbContexts
         public DbSet<CartHeader> CartHeaders { get; set; }
         public DbSet<CartDetails> CartDetails { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<UserFavoriteProduct> UserFavoriteProducts { get; set;}
     }
 }

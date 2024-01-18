@@ -73,10 +73,15 @@ namespace Lider_V_APIServices.Services
             }
         }
 
-        public async Task<IEnumerable<ProductDto>> GetFavoriteProductsAsync()
+        public async Task<IEnumerable<ProductDto>> GetFavoriteProductsAsync(string userId)
         {
-            List<Product> favoriteProducts = await _context.Products.ToListAsync();
-            return _mapper.Map<List<ProductDto>>(favoriteProducts);
+            var favoriteProducts = await _context.UserFavoriteProducts
+                .Where(ufp => ufp.UserId == userId)
+                .Include(ufp => ufp.Product)
+                .Select(ufp => _mapper.Map<ProductDto>(ufp.Product))
+                .ToListAsync();
+
+            return favoriteProducts;
         }
 
         public async Task<ProductDto> GetProductByIdAsync(int id)
@@ -147,17 +152,25 @@ namespace Lider_V_APIServices.Services
             }
         }
 
-        public async Task ToggleFavoriteStatusAsync(int productId)
+        public async Task ToggleFavoriteStatusAsync(int productId, string userId)
         {
-            Product product = await _context.Products.FindAsync(productId);
+            var userFavoriteProduct = await _context.UserFavoriteProducts
+                .FirstOrDefaultAsync(ufp => ufp.ProductId == productId && ufp.UserId == userId);
 
-            //if (product != null)
-            //{
-            //    product.IsFavorite = !product.IsFavorite;
-            //    await _context.SaveChangesAsync();
-            //}
+            if (userFavoriteProduct != null)
+            {
+                _context.UserFavoriteProducts.Remove(userFavoriteProduct);
+            }
+            else
+            {
+                _context.UserFavoriteProducts.Add(new UserFavoriteProduct
+                {
+                    UserId = userId,
+                    ProductId = productId
+                });
+            }
 
-            return;
+            await _context.SaveChangesAsync();
         }
     }
 }

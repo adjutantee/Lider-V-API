@@ -17,5 +17,6 @@ namespace Lider_V_APIServices.Models
         public int? CategoryId { get; set; }
         [ForeignKey("CategoryId")]
         public Category? Category { get; set; }
+        public ICollection<UserFavoriteProduct> UserFavorites { get; set; }
     }
 }

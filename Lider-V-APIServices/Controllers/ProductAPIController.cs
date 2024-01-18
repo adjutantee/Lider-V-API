@@ -46,7 +46,8 @@ namespace Lider_V_APIServices.Controllers
         {
             try
             {
-                IEnumerable<ProductDto> favoriteProducts = await _productRepository.GetFavoriteProductsAsync();
+                var userId = _userManager.GetUserId(User);
+                IEnumerable<ProductDto> favoriteProducts = await _productRepository.GetFavoriteProductsAsync(userId);
                 _response.Result = favoriteProducts;
                 return StatusCode(200, _response);
             }
@@ -84,7 +85,8 @@ namespace Lider_V_APIServices.Controllers
         {
             try
             {
-                await _productRepository.ToggleFavoriteStatusAsync(id);
+                var userId = _userManager.GetUserId(User);
+                await _productRepository.ToggleFavoriteStatusAsync(id, userId);
                 _response.Result = "Cтатус избранного установлен успешно";
                 return StatusCode(200, _response);
             }
