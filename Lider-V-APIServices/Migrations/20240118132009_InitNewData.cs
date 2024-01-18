@@ -193,7 +193,7 @@ namespace Lider_V_APIServices.Migrations
                     ProductPrice = table.Column<decimal>(type: "numeric", nullable: false),
                     ProductDescription = table.Column<string>(type: "text", nullable: true),
                     ProductImage = table.Column<byte[]>(type: "bytea", nullable: true),
-                    ProductWeight = table.Column<double>(type: "double precision", nullable: true),
+                    ProductSize = table.Column<string>(type: "text", nullable: true),
                     ProductQuantity = table.Column<int>(type: "integer", nullable: true),
                     CategoryId = table.Column<int>(type: "integer", nullable: true)
                 },

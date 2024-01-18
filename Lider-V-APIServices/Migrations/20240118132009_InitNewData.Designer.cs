@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Lider_V_APIServices.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240117140816_InitNewData")]
+    [Migration("20240118132009_InitNewData")]
     partial class InitNewData
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -113,8 +113,8 @@ namespace Lider_V_APIServices.Migrations
                     b.Property<int?>("ProductQuantity")
                         .HasColumnType("integer");
 
-                    b.Property<double?>("ProductWeight")
-                        .HasColumnType("double precision");
+                    b.Property<string>("ProductSize")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 

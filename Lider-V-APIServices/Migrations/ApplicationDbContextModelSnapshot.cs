@@ -111,8 +111,8 @@ namespace Lider_V_APIServices.Migrations
                     b.Property<int?>("ProductQuantity")
                         .HasColumnType("integer");
 
-                    b.Property<double?>("ProductWeight")
-                        .HasColumnType("double precision");
+                    b.Property<string>("ProductSize")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
