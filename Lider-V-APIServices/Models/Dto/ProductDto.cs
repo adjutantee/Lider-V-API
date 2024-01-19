@@ -12,6 +12,5 @@ namespace Lider_V_APIServices.Models.Dto
         public string? ProductSize { get; set; }
         public int? ProductQuantity { get; set; }
         public int? CategoryId { get; set; }
-        public Category? Category { get; set; }
     }
 }
