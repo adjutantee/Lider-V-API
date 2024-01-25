@@ -22,49 +22,47 @@ namespace Lider_V_APIServices.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Lider_V_APIServices.Models.CartDetails", b =>
+            modelBuilder.Entity("Lider_V_APIServices.Models.Cart", b =>
                 {
-                    b.Property<int?>("CartDetailsId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int?>("CartDetailsId"));
-
-                    b.Property<int?>("CartHeaderId")
-                        .IsRequired()
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("Count")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("ProductId")
-                        .IsRequired()
-                        .HasColumnType("integer");
-
-                    b.HasKey("CartDetailsId");
-
-                    b.HasIndex("CartHeaderId");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("CartDetails");
-                });
-
-            modelBuilder.Entity("Lider_V_APIServices.Models.CartHeader", b =>
-                {
-                    b.Property<int>("CartHeaderId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("CartHeaderId"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("CartHeaderId");
+                    b.HasKey("Id");
 
-                    b.ToTable("CartHeaders");
+                    b.ToTable("Carts");
+                });
+
+            modelBuilder.Entity("Lider_V_APIServices.Models.CartItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("CartId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CartId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("CartItems");
                 });
 
             modelBuilder.Entity("Lider_V_APIServices.Models.Category", b =>
@@ -347,21 +345,17 @@ namespace Lider_V_APIServices.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("Lider_V_APIServices.Models.CartDetails", b =>
+            modelBuilder.Entity("Lider_V_APIServices.Models.CartItem", b =>
                 {
-                    b.HasOne("Lider_V_APIServices.Models.CartHeader", "CartHeader")
-                        .WithMany()
-                        .HasForeignKey("CartHeaderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("Lider_V_APIServices.Models.Cart", null)
+                        .WithMany("CartItems")
+                        .HasForeignKey("CartId");
 
                     b.HasOne("Lider_V_APIServices.Models.Product", "Product")
-                        .WithMany()
+                        .WithMany("CartItems")
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("CartHeader");
 
                     b.Navigation("Product");
                 });
@@ -436,8 +430,15 @@ namespace Lider_V_APIServices.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Lider_V_APIServices.Models.Cart", b =>
+                {
+                    b.Navigation("CartItems");
+                });
+
             modelBuilder.Entity("Lider_V_APIServices.Models.Product", b =>
                 {
+                    b.Navigation("CartItems");
+
                     b.Navigation("UserFavorites");
                 });
 #pragma warning restore 612, 618

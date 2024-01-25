@@ -16,125 +16,130 @@ namespace Lider_V_APIServices.Services
             _mapper = mapper;
         }
 
-        public async Task<bool> ClearCart(string userId)
-        {
-            var cartHeaderFromDb = await _context.CartHeaders.FirstOrDefaultAsync(x => x.UserId == userId);
-
-            if (cartHeaderFromDb != null)
-            {
-                _context.CartDetails
-                    .RemoveRange(_context.CartDetails.Where(x => x.CartHeaderId == cartHeaderFromDb.CartHeaderId));
-                _context.CartHeaders.Remove(cartHeaderFromDb);
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public async Task<CartDto> CreateUpdateCart(CartDto cartDto)
-        {
-            Cart cart = _mapper.Map<Cart>(cartDto);
-            var prodInDb = await _context.Products
-                .FirstOrDefaultAsync(x => x.Id == cartDto.CartDetails.FirstOrDefault()
-                .ProductId);
-
-            if (prodInDb == null)
-            {
-                _context.Products.Add(cart.CartDetails.FirstOrDefault().Product);
-                await _context.SaveChangesAsync();
-            }
-
-            // проверка если header is null
-            var cartHeaderFromDb = await _context.CartHeaders.AsNoTracking()
-                .FirstOrDefaultAsync(x => x.UserId == cart.CartHeader.UserId);
-
-            if (cartHeaderFromDb == null)
-            {
-                // создание header и details
-                _context.CartHeaders.Add(cart.CartHeader);
-                await _context.SaveChangesAsync();
-                cart.CartDetails.FirstOrDefault().CartHeaderId = cart.CartHeader.CartHeaderId;
-                cart.CartDetails.FirstOrDefault().Product = null;
-                _context.CartDetails.Add(cart.CartDetails.FirstOrDefault());
-                await _context.SaveChangesAsync();
-            }
-            else
-            {
-                // если header is not null
-                // проверка есть ли в details тот же product
-                var CartDetailsFromDb = await _context.CartDetails.AsNoTracking().FirstOrDefaultAsync(
-                    x => x.ProductId == cart.CartDetails.FirstOrDefault().ProductId &&
-                    x.CartHeaderId == cartHeaderFromDb.CartHeaderId);
-
-                if (cartHeaderFromDb == null)
-                {
-                    // create detaisl
-                    cart.CartDetails.FirstOrDefault().CartHeaderId = cartHeaderFromDb.CartHeaderId;
-                    cart.CartDetails.FirstOrDefault().Product = null;
-                    _context.CartDetails.Add(cart.CartDetails.FirstOrDefault());
-                    await _context.SaveChangesAsync();
-                }
-                else
-                {
-                    // update the count | cart details
-                    cart.CartDetails.FirstOrDefault().Product = null;
-                    cart.CartDetails.FirstOrDefault().Count += CartDetailsFromDb.Count;
-                    _context.CartDetails.Update(cart.CartDetails.FirstOrDefault());
-                    await _context.SaveChangesAsync();
-                }
-            }
-            return _mapper.Map<CartDto>(cart);
-        }
-
-        public async Task<CartDto> GetCartByUserId(string userId)
-        {
-            Cart cart = new()
-            {
-                CartHeader = await _context.CartHeaders.FirstOrDefaultAsync(x => x.UserId == userId)
-            };
-
-            if (cart.CartDetails == null && cart.CartHeader == null || cart.CartHeader == null)
-            {
-                return null;
-            }
-
-            cart.CartDetails = _context.CartDetails
-                .Where(x => x.CartHeaderId == cart.CartHeader.CartHeaderId).Include(x => x.Product);
-
-            return _mapper.Map<CartDto>(cart);
-        }
-
-        public async Task<bool> RemoveFromCart(int cartDetailsId)
+        public async Task<bool> AddToCartAsync(int productId, int quantity, string userId)
         {
             try
             {
-                CartDetails cartDetails = await _context.CartDetails
-                .FirstOrDefaultAsync(x => x.CartDetailsId == cartDetailsId);
+                var userCart = await _context.Carts
+                    .Include(c => c.CartItems)
+                    .FirstOrDefaultAsync(c => c.UserId == userId);
 
-                int totalCountOfCartItems = _context.CartDetails
-                    .Where(x => x.CartHeaderId == cartDetails.CartHeaderId).Count();
-
-                _context.CartDetails.Remove(cartDetails);
-
-                if (totalCountOfCartItems == 1)
+                if (userCart == null)
                 {
-                    var cartHeaderToRemove = await _context.CartHeaders
-                        .FirstOrDefaultAsync(x => x.CartHeaderId == cartDetails.CartHeaderId);
+                    userCart = new Cart
+                    {
+                        UserId = userId,
+                        CartItems = new List<CartItem>()
+                    };
+                }
 
-                    _context.CartHeaders.Remove(cartHeaderToRemove);
+                var existingCartItem = userCart.CartItems.FirstOrDefault(ci => ci.ProductId == productId);
+
+                if (existingCartItem != null)
+                {
+                    // Если товар уже есть в корзине, увеличиваем количество
+                    existingCartItem.Quantity += quantity;
+                }
+                else
+                {
+                    // Если товара еще нет в корзине, добавляем новый элемент
+                    userCart.CartItems.Add(new CartItem
+                    {
+                        ProductId = productId,
+                        Quantity = quantity
+                    });
                 }
 
                 await _context.SaveChangesAsync();
                 return true;
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
+        }
 
+        public async Task<bool> ClearCartAsync(string userId)
+        {
+            try
+            {
+                var cart = await _context.Carts
+                    .Include(c => c.CartItems)
+                    .FirstOrDefaultAsync(c => c.UserId == userId);
+
+                if (cart != null)
+                {
+                    _context.CartItems.RemoveRange(cart.CartItems);
+                    await _context.SaveChangesAsync();
+                    return true;
+                }
+
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<CartDto> GetCartAsync(string userId)
+        {
+            var userCart = await _context.Carts
+                .Include(c => c.CartItems)
+                .ThenInclude(ci => ci.Product)
+                .FirstOrDefaultAsync(c => c.UserId == userId);
+
+            if (userCart != null)
+            {
+                var cartDto = _mapper.Map<CartDto>(userCart);
+                return cartDto;
+            }
+
+            return null;
+        }
+
+        public async Task<CartDto> GetCartByIdAsync(int cartId)
+        {
+            try
+            {
+                var cart = await _context.Carts
+                    .Include(c => c.CartItems)
+                    .ThenInclude(ci => ci.Product)
+                    .FirstOrDefaultAsync(c => c.Id == cartId);
+
+                if (cart != null)
+                {
+                    var cartDto = _mapper.Map<CartDto>(cart);
+                    return cartDto;
+                }
+
+                return null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public async Task<bool> RemoveFromCartAsync(int cartItemId)
+        {
+            try
+            {
+                var cartItem = await _context.CartItems.FindAsync(cartItemId);
+
+                if (cartItem != null)
+                {
+                    _context.CartItems.Remove(cartItem);
+                    await _context.SaveChangesAsync();
+                    return true;
+                }
+
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

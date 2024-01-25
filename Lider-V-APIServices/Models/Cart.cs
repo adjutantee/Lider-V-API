@@ -1,8 +1,12 @@
-﻿namespace Lider_V_APIServices.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Lider_V_APIServices.Models
 {
     public class Cart
     {
-        public CartHeader CartHeader { get; set; }
-        public IEnumerable<CartDetails> CartDetails { get; set; }
+        [Key]
+        public int Id { get; set; }
+        public string UserId { get; set; }
+        public ICollection<CartItem> CartItems { get; set; }
     }
 }

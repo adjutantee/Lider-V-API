@@ -2,7 +2,8 @@
 {
     public class CartDto
     {
-        public CartHeader CartHeader { get; set; }
-        public IEnumerable<CartDetails> CartDetails { get; set; }
+        public int Id { get; set; }
+        public string UserId { get; set; }
+        public ICollection<CartItem> CartItems { get; set; }
     }
 }

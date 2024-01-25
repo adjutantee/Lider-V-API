@@ -52,16 +52,16 @@ namespace Lider_V_APIServices.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "CartHeaders",
+                name: "Carts",
                 columns: table => new
                 {
-                    CartHeaderId = table.Column<int>(type: "integer", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     UserId = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CartHeaders", x => x.CartHeaderId);
+                    table.PrimaryKey("PK_Carts", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -203,26 +203,25 @@ namespace Lider_V_APIServices.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "CartDetails",
+                name: "CartItems",
                 columns: table => new
                 {
-                    CartDetailsId = table.Column<int>(type: "integer", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    CartHeaderId = table.Column<int>(type: "integer", nullable: false),
                     ProductId = table.Column<int>(type: "integer", nullable: false),
-                    Count = table.Column<int>(type: "integer", nullable: true)
+                    Quantity = table.Column<int>(type: "integer", nullable: false),
+                    CartId = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CartDetails", x => x.CartDetailsId);
+                    table.PrimaryKey("PK_CartItems", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_CartDetails_CartHeaders_CartHeaderId",
-                        column: x => x.CartHeaderId,
-                        principalTable: "CartHeaders",
-                        principalColumn: "CartHeaderId",
-                        onDelete: ReferentialAction.Cascade);
+                        name: "FK_CartItems_Carts_CartId",
+                        column: x => x.CartId,
+                        principalTable: "Carts",
+                        principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_CartDetails_Products_ProductId",
+                        name: "FK_CartItems_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
                         principalColumn: "Id",
@@ -293,13 +292,13 @@ namespace Lider_V_APIServices.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_CartDetails_CartHeaderId",
-                table: "CartDetails",
-                column: "CartHeaderId");
+                name: "IX_CartItems_CartId",
+                table: "CartItems",
+                column: "CartId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CartDetails_ProductId",
-                table: "CartDetails",
+                name: "IX_CartItems_ProductId",
+                table: "CartItems",
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
@@ -331,7 +330,7 @@ namespace Lider_V_APIServices.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "CartDetails");
+                name: "CartItems");
 
             migrationBuilder.DropTable(
                 name: "Categories");
@@ -343,7 +342,7 @@ namespace Lider_V_APIServices.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "CartHeaders");
+                name: "Carts");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

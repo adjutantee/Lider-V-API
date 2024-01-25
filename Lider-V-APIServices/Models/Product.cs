@@ -16,5 +16,6 @@ namespace Lider_V_APIServices.Models
         public int? ProductQuantity { get; set; }
         public int? CategoryId { get; set; }
         public ICollection<UserFavoriteProduct> UserFavorites { get; set; }
+        public ICollection<CartItem> CartItems { get; set; }
     }
 }

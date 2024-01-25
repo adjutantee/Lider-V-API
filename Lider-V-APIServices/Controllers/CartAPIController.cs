@@ -1,6 +1,7 @@
 ﻿using Lider_V_APIServices.Models;
 using Lider_V_APIServices.Models.Dto;
 using Lider_V_APIServices.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,6 +9,7 @@ namespace Lider_V_APIServices.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class CartAPIController : Controller
     {
         private ICartRepository _cartRepository;
@@ -21,8 +23,8 @@ namespace Lider_V_APIServices.Controllers
             this._userManager = userManager;
         }
 
-        [HttpGet("GetCart/{userId}")]
-        public async Task<object> GetCart(string userId)
+        [HttpGet]
+        public async Task<object> GetCart()
         {
             try
             {
@@ -35,8 +37,9 @@ namespace Lider_V_APIServices.Controllers
                     return StatusCode(401, _response);
                 }
 
-                CartDto cartDto = await _cartRepository.GetCartByUserId(userId);
+                CartDto cartDto = await _cartRepository.GetCartAsync(user.Id);
                 _response.Result = cartDto;
+
                 return StatusCode(200, _response);
             }
             catch (Exception ex)
@@ -45,12 +48,10 @@ namespace Lider_V_APIServices.Controllers
                 _response.ErrorMessages = new List<string> { ex.ToString() };
                 return StatusCode(500, _response);
             }
-
-
         }
 
-        [HttpPost("AddCart")]
-        public async Task<object> GetCart(CartDto cartDto)
+        [HttpGet]
+        public async Task<object> GetCartById(int cartId)
         {
             try
             {
@@ -63,9 +64,19 @@ namespace Lider_V_APIServices.Controllers
                     return StatusCode(401, _response);
                 }
 
-                CartDto cartDt = await _cartRepository.CreateUpdateCart(cartDto);
-                _response.Result = cartDt;
-                return StatusCode(200, _response);
+                var cartDto = await _cartRepository.GetCartByIdAsync(cartId);
+
+                if (cartDto != null && cartDto.UserId == user.Id)
+                {
+                    _response.Result = cartDto;
+                    return StatusCode(200, _response);
+                }
+                else
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Корзина не найдена или не принадлежит текущему пользователю";
+                    return StatusCode(404, _response);
+                }
             }
             catch (Exception ex)
             {
@@ -75,8 +86,8 @@ namespace Lider_V_APIServices.Controllers
             }
         }
 
-        [HttpPost("UpdateCart")]
-        public async Task<object> UpdateCart(CartDto cartDto)
+        [HttpPost]
+        public async Task<object> AddToCart([FromBody] CartItemDto cartItemDto)
         {
             try
             {
@@ -89,34 +100,36 @@ namespace Lider_V_APIServices.Controllers
                     return StatusCode(401, _response);
                 }
 
-                CartDto cartDt = await _cartRepository.CreateUpdateCart(cartDto);
-                _response.Result = cartDt;
-                return StatusCode(200, _response);
-            }
-            catch (Exception ex)
-            {
-                _response.IsSuccess = false;
-                _response.ErrorMessages = new List<string> { ex.ToString() };
-                return StatusCode(500, _response);
-            }
-        }
-
-        [HttpPost("RemoveCart")]
-        public async Task<object> RemoveCart([FromBody] int cartId)
-        {
-            try
-            {
-                var user = await _userManager.GetUserAsync(User);
-
-                if (user == null)
-                {
-                    _response.IsSuccess = false;
-                    _response.Result = "Пользователь не авторизован или не найден";
-                    return StatusCode(401, _response);
-                }
-
-                bool isSuccess = await _cartRepository.RemoveFromCart(cartId);
+                bool isSuccess = await _cartRepository.AddToCartAsync(cartItemDto.ProductId, cartItemDto.Quantity, user.Id);
                 _response.Result = isSuccess;
+
+                return StatusCode(200, _response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages = new List<string> { ex.ToString() };
+                return StatusCode(500, _response);
+            }
+        }
+
+        [HttpDelete]
+        public async Task<object> RemoveFromCart(int cartItemId)
+        {
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Пользователь не авторизован или не найден";
+                    return StatusCode(401, _response);
+                }
+
+                bool isSuccess = await _cartRepository.RemoveFromCartAsync(cartItemId);
+                _response.Result = isSuccess;
+
                 return StatusCode(200, _response);
             }
             catch (Exception ex)
@@ -141,7 +154,7 @@ namespace Lider_V_APIServices.Controllers
                     return StatusCode(401, _response);
                 }
 
-                bool isSuccess = await _cartRepository.ClearCart(userId);
+                bool isSuccess = await _cartRepository.ClearCartAsync(userId);
                 _response.Result = isSuccess;
                 return StatusCode(200, _response);
             }
