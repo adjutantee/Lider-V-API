@@ -9,45 +9,36 @@ namespace Lider_V_APIServices.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ProductAPIController : Controller
+    public class FavoriteAPIController : Controller
     {
-        protected ResponseDto _response;
-        private IProductRepository _productRepository;
         private readonly UserManager<User> _userManager;
-
-        public ProductAPIController(IProductRepository productRepository, UserManager<User> userManager)
+        protected ResponseDto _response;
+        private readonly IFavoriteRepository _favoriteRepository;
+        public FavoriteAPIController(UserManager<User> userManager, IFavoriteRepository favoriteRepository)
         {
-            this._response = new ResponseDto();
-            _productRepository = productRepository;
             _userManager = userManager;
+            this._response = new ResponseDto();
+            _favoriteRepository = favoriteRepository;
         }
 
         [HttpGet]
-        public async Task<object> GetProducts()
-        {
-            try
-            {
-                IEnumerable<ProductDto> productDtos = await _productRepository.GetProductsAsync();
-                _response.Result = productDtos;
-                return StatusCode(200, _response);
-            }
-            catch (Exception ex)
-            {
-                _response.IsSuccess = false;
-                _response.ErrorMessages = new List<string> { ex.ToString() };
-                return StatusCode(500, _response);
-            }
-        }   
-
-        [HttpGet]
-        [Route("{id}")]
+        [Route("favorites")]
         [Authorize]
-        public async Task<object> Get(int id)
+        public async Task<object> GetFavoriteProducts()
         {
             try
             {
-                ProductDto productDto = await _productRepository.GetProductByIdAsync(id);
-                _response.Result = productDto;
+                var userId = _userManager.GetUserId(User);
+
+                if (userId == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Пользователь не авторизован или не найден";
+                    return StatusCode(401, _response);
+                }
+
+                IEnumerable<ProductDto> favoriteProducts = await _favoriteRepository.GetFavoriteProductsAsync(userId);
+                _response.Result = favoriteProducts;
                 return StatusCode(200, _response);
             }
             catch (Exception ex)
@@ -56,60 +47,26 @@ namespace Lider_V_APIServices.Controllers
                 _response.ErrorMessages = new List<string> { ex.ToString() };
                 return StatusCode(500, _response);
             }
-        }     
+        }
 
         [HttpPost]
+        [Route("toggle-favorite/{id}")]
         [Authorize]
-        public async Task<object> Post([FromBody] ProductDto productDto)
+        public async Task<object> ToggleFavoriteStatus(int id)
         {
             try
             {
-                var user = await _userManager.GetUserAsync(User);
+                var userId = _userManager.GetUserId(User);
 
-                if (user == null)
+                if (userId == null)
                 {
                     _response.IsSuccess = false;
                     _response.Result = "Пользователь не авторизован или не найден";
                     return StatusCode(401, _response);
                 }
 
-                if (await _userManager.IsInRoleAsync(user, Constants.AdminRoleName))
-                {
-                    ProductDto model = await _productRepository.CreateUptateProductAsync(productDto);
-                    _response.Result = model;
-                }
-
-                return StatusCode(200, _response);
-            }
-            catch (Exception ex)
-            {
-                _response.IsSuccess = false;
-                _response.ErrorMessages = new List<string> { ex.ToString() };
-                return StatusCode(500, _response);
-            }
-        }
-
-        [HttpPut]
-        [Authorize]
-        public async Task<object> Put([FromBody] ProductDto productDto)
-        {
-            try
-            {
-                var user = await _userManager.GetUserAsync(User);
-
-                if (user == null)
-                {
-                    _response.IsSuccess = false;
-                    _response.Result = "Пользователь не авторизован или не найден";
-                    return StatusCode(401, _response);
-                }
-
-                if (await _userManager.IsInRoleAsync(user, Constants.AdminRoleName))
-                {
-                    ProductDto model = await _productRepository.CreateUptateProductAsync(productDto);
-                    _response.Result = model;
-                }
-
+                await _favoriteRepository.ToggleFavoriteStatusAsync(id, userId);
+                _response.Result = "Cтатус избранного установлен успешно";
                 return StatusCode(200, _response);
             }
             catch (Exception ex)
@@ -121,8 +78,9 @@ namespace Lider_V_APIServices.Controllers
         }
 
         [HttpDelete]
+        [Route("delete-favorite/{id}")]
         [Authorize]
-        public async Task<object> Delete(int id)
+        public async Task<object> DeleteFavoriteProduct(int id)
         {
             try
             {
@@ -137,10 +95,10 @@ namespace Lider_V_APIServices.Controllers
 
                 if (await _userManager.IsInRoleAsync(user, Constants.AdminRoleName))
                 {
-                    bool isSuccess = await _productRepository.DeleteProduct(id);
+                    bool isSuccess = await _favoriteRepository.RemoveFromFavoritesAsync(id);
                     _response.Result = isSuccess;
                 }
-                
+
                 return StatusCode(200, _response);
             }
             catch (Exception ex)
@@ -149,6 +107,6 @@ namespace Lider_V_APIServices.Controllers
                 _response.ErrorMessages = new List<string> { ex.ToString() };
                 return StatusCode(500, _response);
             }
-        }   
+        }
     }
 }

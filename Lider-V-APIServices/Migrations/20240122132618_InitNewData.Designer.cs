@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Lider_V_APIServices.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240118220446_InitNewData")]
+    [Migration("20240122132618_InitNewData")]
     partial class InitNewData
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -117,8 +117,6 @@ namespace Lider_V_APIServices.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CategoryId");
 
                     b.ToTable("Products");
                 });
@@ -368,15 +366,6 @@ namespace Lider_V_APIServices.Migrations
                     b.Navigation("CartHeader");
 
                     b.Navigation("Product");
-                });
-
-            modelBuilder.Entity("Lider_V_APIServices.Models.Product", b =>
-                {
-                    b.HasOne("Lider_V_APIServices.Models.Category", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId");
-
-                    b.Navigation("Category");
                 });
 
             modelBuilder.Entity("Lider_V_APIServices.Models.UserFavoriteProduct", b =>

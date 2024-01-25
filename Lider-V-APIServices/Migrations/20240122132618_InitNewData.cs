@@ -78,6 +78,25 @@ namespace Lider_V_APIServices.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Products",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ProductName = table.Column<string>(type: "text", nullable: false),
+                    ProductPrice = table.Column<decimal>(type: "numeric", nullable: false),
+                    ProductDescription = table.Column<string>(type: "text", nullable: true),
+                    ProductImage = table.Column<byte[]>(type: "bytea", nullable: true),
+                    ProductSize = table.Column<string>(type: "text", nullable: true),
+                    ProductQuantity = table.Column<int>(type: "integer", nullable: true),
+                    CategoryId = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Products", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
@@ -184,30 +203,6 @@ namespace Lider_V_APIServices.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Products",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ProductName = table.Column<string>(type: "text", nullable: false),
-                    ProductPrice = table.Column<decimal>(type: "numeric", nullable: false),
-                    ProductDescription = table.Column<string>(type: "text", nullable: true),
-                    ProductImage = table.Column<byte[]>(type: "bytea", nullable: true),
-                    ProductSize = table.Column<string>(type: "text", nullable: true),
-                    ProductQuantity = table.Column<int>(type: "integer", nullable: true),
-                    CategoryId = table.Column<int>(type: "integer", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Products", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Products_Categories_CategoryId",
-                        column: x => x.CategoryId,
-                        principalTable: "Categories",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
                 name: "CartDetails",
                 columns: table => new
                 {
@@ -308,11 +303,6 @@ namespace Lider_V_APIServices.Migrations
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Products_CategoryId",
-                table: "Products",
-                column: "CategoryId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_UserFavoriteProducts_ProductId",
                 table: "UserFavoriteProducts",
                 column: "ProductId");
@@ -344,6 +334,9 @@ namespace Lider_V_APIServices.Migrations
                 name: "CartDetails");
 
             migrationBuilder.DropTable(
+                name: "Categories");
+
+            migrationBuilder.DropTable(
                 name: "UserFavoriteProducts");
 
             migrationBuilder.DropTable(
@@ -357,9 +350,6 @@ namespace Lider_V_APIServices.Migrations
 
             migrationBuilder.DropTable(
                 name: "Products");
-
-            migrationBuilder.DropTable(
-                name: "Categories");
         }
     }
 }
