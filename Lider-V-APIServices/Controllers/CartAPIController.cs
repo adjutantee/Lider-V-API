@@ -51,6 +51,7 @@ namespace Lider_V_APIServices.Controllers
         }
 
         [HttpGet]
+        [Route("{id}")]
         public async Task<object> GetCartById(int cartId)
         {
             try
