@@ -24,7 +24,7 @@ namespace Lider_V_APIServices.Controllers
         }
 
         [HttpGet]
-        public async Task<object> GetCart()
+        public async Task<object> Get()
         {
             try
             {
@@ -50,9 +50,8 @@ namespace Lider_V_APIServices.Controllers
             }
         }
 
-        [HttpGet]
-        [Route("{id}")]
-        public async Task<object> GetCartById(int cartId)
+        [HttpGet("GetCartById")]
+        public async Task<object> Get(int cartId)
         {
             try
             {
@@ -142,7 +141,7 @@ namespace Lider_V_APIServices.Controllers
         }
 
         [HttpPost("ClearCart")]
-        public async Task<object> ClearCart([FromBody] string userId)
+        public async Task<object> ClearCart(string userId)
         {
             try
             {
