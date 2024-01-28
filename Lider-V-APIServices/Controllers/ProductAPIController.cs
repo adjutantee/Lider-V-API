@@ -80,6 +80,12 @@ namespace Lider_V_APIServices.Controllers
                     ProductDto model = await _productRepository.CreateUptateProductAsync(productDto);
                     _response.Result = model;
                 }
+                else
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Данная функция доступна только для администратора";
+                    return StatusCode(403, _response);
+                }
 
                 return StatusCode(200, _response);
             }
@@ -111,6 +117,12 @@ namespace Lider_V_APIServices.Controllers
                     ProductDto model = await _productRepository.CreateUptateProductAsync(productDto);
                     _response.Result = model;
                 }
+                else
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Данная функция доступна только для администратора";
+                    return StatusCode(403, _response);
+                }
 
                 return StatusCode(200, _response);
             }
@@ -141,6 +153,12 @@ namespace Lider_V_APIServices.Controllers
                 {
                     bool isSuccess = await _productRepository.DeleteProduct(id);
                     _response.Result = isSuccess;
+                }
+                else
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Данная функция доступна только для администратора";
+                    return StatusCode(403, _response);
                 }
 
                 return StatusCode(200, _response);
@@ -196,6 +214,12 @@ namespace Lider_V_APIServices.Controllers
                     await _productRepository.AddProductToCategoryAsync(productId, categoryId);
                     _response.Result = "Продукт успешно добавлен в категорию";
                 }
+                else
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Данная функция доступна только для администратора";
+                    return StatusCode(403, _response);
+                }
 
                 return StatusCode(200, _response);
             }
@@ -227,6 +251,12 @@ namespace Lider_V_APIServices.Controllers
                 {
                     await _productRepository.RemoveProductFromCategoryAsync(productId, categoryId);
                     _response.Result = "Продукт успешно удален из категории";
+                }
+                else
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Данная функция доступна только для администратора";
+                    return StatusCode(403, _response);
                 }
 
                 return StatusCode(200, _response);
@@ -315,11 +345,8 @@ namespace Lider_V_APIServices.Controllers
                     return StatusCode(401, _response);
                 }
 
-                if (await _userManager.IsInRoleAsync(user, Constants.AdminRoleName))
-                {
-                    bool isSuccess = await _productRepository.RemoveFromFavoritesAsync(id);
-                    _response.Result = isSuccess;
-                }
+                bool isSuccess = await _productRepository.RemoveFromFavoritesAsync(id);
+                _response.Result = isSuccess;
 
                 return StatusCode(200, _response);
             }

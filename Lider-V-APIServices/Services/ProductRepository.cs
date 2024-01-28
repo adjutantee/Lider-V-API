@@ -38,6 +38,7 @@ namespace Lider_V_APIServices.Services
             if (productDto.ProductImage != null && productDto.ProductImage.Length > 0)
             {
                 product.ProductImage = productDto.ProductImage;
+                productDto.ProductImageBase64 = Convert.ToBase64String(productDto.ProductImage);
             }
 
             if (product.Id > 0)

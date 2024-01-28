@@ -31,6 +31,8 @@ namespace Lider_V_APIServices.Migrations
                     Id = table.Column<string>(type: "text", nullable: false),
                     UserFirstName = table.Column<string>(type: "text", nullable: false),
                     UserLastName = table.Column<string>(type: "text", nullable: false),
+                    RegistrationDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LastLoginDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),

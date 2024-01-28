@@ -9,6 +9,7 @@ namespace Lider_V_APIServices.Models.Dto
         public decimal ProductPrice { get; set; }
         public string? ProductDescription { get; set; }
         public byte[]? ProductImage { get; set; }
+        public string? ProductImageBase64 { get; set; }
         public string? ProductSize { get; set; }
         public int? ProductQuantity { get; set; }
         public int? CategoryId { get; set; }

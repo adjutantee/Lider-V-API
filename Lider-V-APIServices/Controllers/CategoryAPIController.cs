@@ -37,9 +37,18 @@ namespace Lider_V_APIServices.Controllers
                     return StatusCode(401, _response);
                 }
 
-                IEnumerable<CategoryDto> categories = await _categoryRepository.GetCategoriesAsync();
-                _response.Result = categories;
-                return StatusCode(200, _response);
+                if (await _userManager.IsInRoleAsync(user, Constants.AdminRoleName))
+                {
+                    IEnumerable<CategoryDto> categories = await _categoryRepository.GetCategoriesAsync();
+                    _response.Result = categories;
+                    return StatusCode(200, _response);
+                }
+                else
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Данная функция доступна только для администратора";
+                    return StatusCode(403, _response);
+                }
             }
             catch (Exception ex)
             {
@@ -97,9 +106,18 @@ namespace Lider_V_APIServices.Controllers
                     return StatusCode(401, _response);
                 }
 
-                CategoryDto addedCategory = await _categoryRepository.AddCategoryAsync(categoryDto);
-                _response.Result = addedCategory;
-                return StatusCode(200, _response);
+                if (await _userManager.IsInRoleAsync(user, Constants.AdminRoleName))
+                {
+                    CategoryDto addedCategory = await _categoryRepository.AddCategoryAsync(categoryDto);
+                    _response.Result = addedCategory;
+                    return StatusCode(200, _response);
+                }
+                else
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Данная функция доступна только для администратора";
+                    return StatusCode(403, _response);
+                }
             }
             catch (Exception ex)
             {
@@ -123,17 +141,26 @@ namespace Lider_V_APIServices.Controllers
                     return StatusCode(401, _response);
                 }
 
-                bool isRemoved = await _categoryRepository.RemoveCategoryAsync(id);
+                if (await _userManager.IsInRoleAsync(user, Constants.AdminRoleName))
+                {
+                    bool isRemoved = await _categoryRepository.RemoveCategoryAsync(id);
 
-                if (!isRemoved)
+                    if (!isRemoved)
+                    {
+                        _response.IsSuccess = false;
+                        _response.Result = "Категория не найдена";
+                        return StatusCode(404, _response);
+                    }
+
+                    _response.Result = isRemoved;
+                    return StatusCode(200, _response);
+                }
+                else
                 {
                     _response.IsSuccess = false;
-                    _response.ErrorMessages = new List<string> { "Category not found" };
-                    return StatusCode(404, _response);
+                    _response.Result = "Данная функция доступна только для администратора";
+                    return StatusCode(403, _response);
                 }
-
-                _response.Result = isRemoved;
-                return StatusCode(200, _response);
             }
             catch (Exception ex)
             {
