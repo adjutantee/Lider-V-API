@@ -10,7 +10,9 @@ namespace Lider_V_APIServices.Helpers
         {
             var mappingConfig = new MapperConfiguration(config =>
             {
-                config.CreateMap<ProductDto, Product>().ReverseMap();
+                config.CreateMap<ProductDto, Product>()
+                .ForMember(dest => dest.ProductImage, opt => opt.MapFrom(src => src.ProductImage))
+                .ReverseMap();
                 config.CreateMap<CartItem, CartItemDto>().ReverseMap();
                 config.CreateMap<Cart, CartDto>().ReverseMap();
                 config.CreateMap<Category, CategoryDto>().ReverseMap();

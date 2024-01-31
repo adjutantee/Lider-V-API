@@ -42,7 +42,7 @@ namespace Lider_V_APIServices.Controllers
                 else
                 {
                     var token = await _accountRepository.GenerateJwtTokenByUser(user);
-                    user.LastLoginDate = DateTime.Now;
+                    user.LastLoginDate = DateTime.UtcNow;
                     await _cotnext.SaveChangesAsync();
                     _response.Result = token;
                     return StatusCode(200, _response);

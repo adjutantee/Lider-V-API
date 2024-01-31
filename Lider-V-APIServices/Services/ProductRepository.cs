@@ -10,11 +10,13 @@ namespace Lider_V_APIServices.Services
     {
         private readonly ApplicationDbContext _context;
         private IMapper _mapper;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public ProductRepository(ApplicationDbContext context, IMapper mapper)
+        public ProductRepository(ApplicationDbContext context, IMapper mapper, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
             _mapper = mapper;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         #region Product model
@@ -37,8 +39,8 @@ namespace Lider_V_APIServices.Services
 
             if (productDto.ProductImage != null && productDto.ProductImage.Length > 0)
             {
-                product.ProductImage = productDto.ProductImage;
-                productDto.ProductImageBase64 = Convert.ToBase64String(productDto.ProductImage);
+                string imagePath = await SaveImageAsync(productDto.ProductImage);
+                product.ProductImage = imagePath;
             }
 
             if (product.Id > 0)
@@ -73,6 +75,33 @@ namespace Lider_V_APIServices.Services
             catch
             {
                 return false;
+            }
+        }
+
+        private async Task<string> SaveImageAsync(string imageData)
+        {
+            try
+            {
+                // Декодируем строку изображения из base64 в массив байт
+                byte[] imageBytes = Convert.FromBase64String(imageData);
+
+                string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "Files");
+
+                if (!Directory.Exists(uploadsFolder))
+                {
+                    Directory.CreateDirectory(uploadsFolder);
+                }
+
+                string uniqueFileName = Guid.NewGuid().ToString() + ".jpg";
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                await File.WriteAllBytesAsync(filePath, imageBytes);
+
+                return Path.Combine("Files", uniqueFileName);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Ошибка при сохранении изображения", ex);
             }
         }
 

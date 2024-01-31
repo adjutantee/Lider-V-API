@@ -20,6 +20,13 @@ namespace Lider_V_APIServices.Services
         {
             try
             {
+                var getProductById = await _context.Products.FirstOrDefaultAsync(x => x.Id == productId);
+
+                if (getProductById == null)
+                {
+                    return false;
+                }
+
                 var userCart = await _context.Carts
                     .Include(c => c.CartItems)
                     .FirstOrDefaultAsync(c => c.UserId == userId);
@@ -58,6 +65,7 @@ namespace Lider_V_APIServices.Services
                 return false;
             }
         }
+
 
         public async Task<bool> ClearCartAsync(string userId)
         {
