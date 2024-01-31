@@ -8,6 +8,5 @@ namespace Lider_V_APIServices.Models.Dto
         public int Id { get; set; }
         public int ProductId { get; set; }
         public int Quantity { get; set; }
-        public ProductDto ProductDto { get; set; }
     }
 }

@@ -38,6 +38,8 @@ namespace Lider_V_APIServices.Services
                         UserId = userId,
                         CartItems = new List<CartItem>()
                     };
+
+                    _context.Carts.Add(userCart);
                 }
 
                 var existingCartItem = userCart.CartItems.FirstOrDefault(ci => ci.ProductId == productId);

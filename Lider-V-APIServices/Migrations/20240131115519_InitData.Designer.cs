@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Lider_V_APIServices.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240131070502_InitData")]
+    [Migration("20240131115519_InitData")]
     partial class InitData
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
