@@ -56,6 +56,28 @@ namespace Lider_V_APIServices.Services
             return _mapper.Map<Product, ProductDto>(product);
         }
 
+        public async Task<bool> DecreaseProductStock(int productId, int quantity)
+        {
+            try
+            {
+                Product product = await _context.Products.FirstOrDefaultAsync(x => x.Id == productId);
+
+                if (product == null || product.ProductQuantity < quantity)
+                {
+                    return false; // Недостаточное количество товара в наличии
+                }
+
+                product.ProductQuantity -= quantity;
+                await _context.SaveChangesAsync();
+
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         public async Task<bool> DeleteProduct(int id)
         {
             try

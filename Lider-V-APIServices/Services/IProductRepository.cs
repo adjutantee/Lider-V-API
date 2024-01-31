@@ -7,7 +7,8 @@ namespace Lider_V_APIServices.Services
         // Product model
         Task<IEnumerable<ProductDto>> GetProductsAsync();
         Task<ProductDto> GetProductByIdAsync(int id);
-        Task<ProductDto> CreateUptateProductAsync(ProductDto productDto);     
+        Task<ProductDto> CreateUptateProductAsync(ProductDto productDto);
+        Task<bool> DecreaseProductStock(int productId, int quantity);
         Task<bool> DeleteProduct(int id);
 
         // ProductCategory model
