@@ -161,8 +161,8 @@ namespace Lider_V_APIServices.Migrations
                     b.Property<string>("ProductDescription")
                         .HasColumnType("text");
 
-                    b.Property<string>("ProductImage")
-                        .HasColumnType("text");
+                    b.Property<byte[]>("ProductImage")
+                        .HasColumnType("bytea");
 
                     b.Property<string>("ProductName")
                         .IsRequired()

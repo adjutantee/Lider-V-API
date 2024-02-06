@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Lider_V_APIServices.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240131214434_InitNewData")]
-    partial class InitNewData
+    [Migration("20240206132301_InitData")]
+    partial class InitData
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -163,8 +163,8 @@ namespace Lider_V_APIServices.Migrations
                     b.Property<string>("ProductDescription")
                         .HasColumnType("text");
 
-                    b.Property<string>("ProductImage")
-                        .HasColumnType("text");
+                    b.Property<byte[]>("ProductImage")
+                        .HasColumnType("bytea");
 
                     b.Property<string>("ProductName")
                         .IsRequired()

@@ -6,7 +6,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Lider_V_APIServices.Migrations
 {
-    public partial class InitNewData : Migration
+    public partial class InitData : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -88,7 +88,7 @@ namespace Lider_V_APIServices.Migrations
                     ProductName = table.Column<string>(type: "text", nullable: false),
                     ProductPrice = table.Column<decimal>(type: "numeric", nullable: false),
                     ProductDescription = table.Column<string>(type: "text", nullable: true),
-                    ProductImage = table.Column<string>(type: "text", nullable: true),
+                    ProductImage = table.Column<byte[]>(type: "bytea", nullable: true),
                     ProductSize = table.Column<string>(type: "text", nullable: true),
                     ProductQuantity = table.Column<int>(type: "integer", nullable: true),
                     CategoryId = table.Column<int>(type: "integer", nullable: true)

@@ -3,6 +3,7 @@ using Lider_V_APIServices.DbContexts;
 using Lider_V_APIServices.Models;
 using Lider_V_APIServices.Models.Dto;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 using static System.Net.Mime.MediaTypeNames;
 namespace Lider_V_APIServices.Services
 {
@@ -23,7 +24,13 @@ namespace Lider_V_APIServices.Services
 
         public async Task<IEnumerable<ProductDto>> GetProductsAsync()
         {
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            stopwatch.Start();
+
             List<Product> productList = await _context.Products.ToListAsync();
+
+            stopwatch.Stop();
+            Console.WriteLine($"Время выполнения метода CreateUptateProductAsync: {stopwatch.ElapsedMilliseconds} мс");
             return _mapper.Map<List<ProductDto>>(productList);
         }
 
@@ -35,12 +42,15 @@ namespace Lider_V_APIServices.Services
 
         public async Task<ProductDto> CreateUptateProductAsync(ProductDto productDto)
         {
+            
+
             Product product = _mapper.Map<ProductDto, Product>(productDto);
 
-            if (productDto.ProductImage != null && productDto.ProductImage.Length > 0)
+            if (productDto.Base64Image != null && productDto.Base64Image.Length > 0)
             {
-                string imagePath = await SaveImageAsync(productDto.ProductImage);
-                product.ProductImage = imagePath;
+                //byte[] imagePath = await SaveImageAsync(productDto.Base64Image);
+                byte[] imageBytes = Convert.FromBase64String(productDto.Base64Image);
+                product.ProductImage = imageBytes;
             }
 
             if (product.Id > 0)
@@ -53,6 +63,7 @@ namespace Lider_V_APIServices.Services
             }
 
             await _context.SaveChangesAsync();
+
             return _mapper.Map<Product, ProductDto>(product);
         }
 
@@ -100,26 +111,26 @@ namespace Lider_V_APIServices.Services
             }
         }
 
-        private async Task<string> SaveImageAsync(string imageData)
+        private async Task<byte[]> SaveImageAsync(string imageData)
         {
             try
             {
                 // Декодируем строку изображения из base64 в массив байт
                 byte[] imageBytes = Convert.FromBase64String(imageData);
 
-                string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "Files");
+                //string uploadsFolder = "ProductImageFiles";
 
-                if (!Directory.Exists(uploadsFolder))
-                {
-                    Directory.CreateDirectory(uploadsFolder);
-                }
+                //if (!Directory.Exists(uploadsFolder))
+                //{
+                //    Directory.CreateDirectory(uploadsFolder);
+                //}
 
-                string uniqueFileName = Guid.NewGuid().ToString() + ".jpg";
-                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                //string uniqueFileName = Guid.NewGuid().ToString() + ".jpg";
+                //string filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-                await File.WriteAllBytesAsync(filePath, imageBytes);
+                //await File.WriteAllBytesAsync(filePath, imageBytes);
 
-                return Path.Combine("Files", uniqueFileName);
+                return imageBytes;
             }
             catch (Exception ex)
             {
