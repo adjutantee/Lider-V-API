@@ -15,12 +15,14 @@ namespace Lider_V_APIServices.Controllers
         protected ResponseDto _response;
         private IOrderRepository _orderRepository;
         private readonly UserManager<User> _userManager;
+        private readonly ILogger<OrderAPIController> _logger;
 
-        public OrderAPIController(IOrderRepository orderRepository, UserManager<User> userManager)
+        public OrderAPIController(IOrderRepository orderRepository, UserManager<User> userManager, ILogger<OrderAPIController> logger)
         {
             this._response = new ResponseDto();
             _orderRepository = orderRepository;
             _userManager = userManager;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -30,6 +32,7 @@ namespace Lider_V_APIServices.Controllers
         {
             try
             {
+                _logger.LogInformation("Начало работы метода GetUserOrders");
                 var userId = _userManager.GetUserId(User);
                 IEnumerable<OrderDto> userOrders = (IEnumerable<OrderDto>)await _orderRepository.GetUserOrdersAsync(userId);
                 _response.Result = userOrders;
@@ -37,6 +40,7 @@ namespace Lider_V_APIServices.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Ошибка при получении списка заказов пользователя");
                 _response.IsSuccess = false;
                 _response.ErrorMessages = new List<string> { ex.ToString() };
                 return StatusCode(500, _response);
@@ -44,18 +48,40 @@ namespace Lider_V_APIServices.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = Constants.AdminRoleName)]
         [Route("all-orders")]
         public async Task<object> GetAllOrders()
         {
             try
             {
-                IEnumerable<OrderDto> allOrders = (IEnumerable<OrderDto>)await _orderRepository.GetAllOrdersAsync();
-                _response.Result = allOrders;
-                return StatusCode(200, _response);
+                _logger.LogInformation("Начало работы метода GetAllOrders");
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    _logger.LogError("Пользователь не авторизован или не найден в базе");
+                    _response.IsSuccess = false;
+                    _response.Result = "Пользователь не авторизован или не найден";
+                    return StatusCode(401, _response);
+                }
+                
+                if (await _userManager.IsInRoleAsync(user, Constants.AdminRoleName))
+                {
+                    _logger.LogInformation("Подверждение статуста администратора пользователя. Продолжение работы метода");
+                    IEnumerable<OrderDto> allOrders = (IEnumerable<OrderDto>)await _orderRepository.GetAllOrdersAsync();
+                    _response.Result = allOrders;
+                    return StatusCode(200, _response);
+                }
+                else
+                {
+                    _logger.LogWarning("Данный метод доступен только для администратора");
+                    _response.IsSuccess = false;
+                    _response.Result = "Запрашиваемый ресурс недоступен";
+                    return StatusCode(403, _response);
+                }             
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Ошибка при получении списка заказов");
                 _response.IsSuccess = false;
                 _response.ErrorMessages = new List<string> { ex.ToString() };
                 return StatusCode(500, _response);
@@ -63,12 +89,22 @@ namespace Lider_V_APIServices.Controllers
         }
 
         [HttpGet]
-        [Authorize]
         [Route("{orderId}")]
         public async Task<object> GetOrderDetails(int orderId)
         {
             try
             {
+                _logger.LogInformation("Начало работы метода GetOrderDetails");
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    _logger.LogError("Пользователь не авторизован или не найден в базе");
+                    _response.IsSuccess = false;
+                    _response.Result = "Пользователь не авторизован или не найден";
+                    return StatusCode(401, _response);
+                }
+
                 var userId = _userManager.GetUserId(User);
                 OrderDto orderDetails = (OrderDto)await _orderRepository.GetOrderDetailsAsync(orderId, userId);
 
@@ -86,6 +122,7 @@ namespace Lider_V_APIServices.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Ошибка при получении деталей заказа");
                 _response.IsSuccess = false;
                 _response.ErrorMessages = new List<string> { ex.ToString() };
                 return StatusCode(500, _response);
@@ -93,12 +130,22 @@ namespace Lider_V_APIServices.Controllers
         }
 
         [HttpPost]
-        [Authorize]
         [Route("place-order")]
         public async Task<object> PlaceOrder([FromBody] OrderDto orderDto)
         {
             try
             {
+                _logger.LogInformation("Начало работы метода PlaceOrder");
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    _logger.LogError("Пользователь не авторизован или не найден в базе");
+                    _response.IsSuccess = false;
+                    _response.Result = "Пользователь не авторизован или не найден";
+                    return StatusCode(401, _response);
+                }
+
                 var userId = _userManager.GetUserId(User);
                 bool success = await _orderRepository.PlaceOrderAsync(userId, orderDto);
 
@@ -116,6 +163,7 @@ namespace Lider_V_APIServices.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Ошибка при попытке изменить статус заказа");
                 _response.IsSuccess = false;
                 _response.ErrorMessages = new List<string> { ex.ToString() };
                 return StatusCode(500, _response);
@@ -123,24 +171,44 @@ namespace Lider_V_APIServices.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = Constants.AdminRoleName)]
         [Route("update-order-status/{orderId}/{newStatus}")]
         public async Task<object> UpdateOrderStatus(int orderId, OrderStatusDto newStatusDto)
         {
             try
             {
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    _logger.LogError("Пользователь не авторизован или не найден в базе");
+                    _response.IsSuccess = false;
+                    _response.Result = "Пользователь не авторизован или не найден";
+                    return StatusCode(401, _response);
+                }
+
+
                 bool success = await _orderRepository.UpdateOrderStatusAsync(orderId, newStatusDto);
 
-                if (success)
+                if (await _userManager.IsInRoleAsync(user, Constants.UserRoleName))
                 {
-                    _response.Result = "Статус заказа успешно обновлен";
-                    return StatusCode(200, _response);
+                    if (success)
+                    {
+                        _response.Result = "Статус заказа успешно обновлен";
+                        return StatusCode(200, _response);
+                    }
+                    else
+                    {
+                        _response.IsSuccess = false;
+                        _response.Result = "Ошибка при обновлении статуса заказа";
+                        return StatusCode(400, _response);
+                    }
                 }
                 else
                 {
+                    _logger.LogWarning("Данный метод доступен только для администратора");
                     _response.IsSuccess = false;
-                    _response.Result = "Ошибка при обновлении статуса заказа";
-                    return StatusCode(400, _response);
+                    _response.Result = "Запрашиваемый ресурс недоступен";
+                    return StatusCode(403, _response);
                 }
             }
             catch (Exception ex)

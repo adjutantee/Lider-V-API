@@ -42,16 +42,7 @@ namespace Lider_V_APIServices.Services
 
         public async Task<ProductDto> CreateUptateProductAsync(ProductDto productDto)
         {
-            
-
             Product product = _mapper.Map<ProductDto, Product>(productDto);
-
-            if (productDto.Base64Image != null && productDto.Base64Image.Length > 0)
-            {
-                //byte[] imagePath = await SaveImageAsync(productDto.Base64Image);
-                byte[] imageBytes = Convert.FromBase64String(productDto.Base64Image);
-                product.ProductImage = imageBytes;
-            }
 
             if (product.Id > 0)
             {
@@ -111,32 +102,32 @@ namespace Lider_V_APIServices.Services
             }
         }
 
-        private async Task<byte[]> SaveImageAsync(string imageData)
-        {
-            try
-            {
-                // Декодируем строку изображения из base64 в массив байт
-                byte[] imageBytes = Convert.FromBase64String(imageData);
+        //private async Task<byte[]> SaveImageAsync(string imageData)
+        //{
+        //    try
+        //    {
+        //        // Декодируем строку изображения из base64 в массив байт
+        //        byte[] imageBytes = Convert.FromBase64String(imageData);
 
-                //string uploadsFolder = "ProductImageFiles";
+        //        string uploadsFolder = "ProductImageFiles";
 
-                //if (!Directory.Exists(uploadsFolder))
-                //{
-                //    Directory.CreateDirectory(uploadsFolder);
-                //}
+        //        if (!Directory.Exists(uploadsFolder))
+        //        {
+        //            Directory.CreateDirectory(uploadsFolder);
+        //        }
 
-                //string uniqueFileName = Guid.NewGuid().ToString() + ".jpg";
-                //string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+        //        string uniqueFileName = Guid.NewGuid().ToString() + ".jpg";
+        //        string filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-                //await File.WriteAllBytesAsync(filePath, imageBytes);
+        //        await File.WriteAllBytesAsync(filePath, imageBytes);
 
-                return imageBytes;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Ошибка при сохранении изображения", ex);
-            }
-        }
+        //        return imageBytes;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception("Ошибка при сохранении изображения", ex);
+        //    }
+        //}
 
         #endregion
 

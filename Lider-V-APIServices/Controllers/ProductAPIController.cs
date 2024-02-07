@@ -15,13 +15,15 @@ namespace Lider_V_APIServices.Controllers
         private IProductRepository _productRepository;
         private readonly UserManager<User> _userManager;
         private readonly ILogger<ProductAPIController> _logger;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public ProductAPIController(IProductRepository productRepository, UserManager<User> userManager, ILogger<ProductAPIController> logger)
+        public ProductAPIController(IProductRepository productRepository, UserManager<User> userManager, ILogger<ProductAPIController> logger, IWebHostEnvironment webHostEnvironment)
         {
             this._response = new ResponseDto();
             _productRepository = productRepository;
             _userManager = userManager;
             _logger = logger;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         #region Product section
@@ -67,7 +69,7 @@ namespace Lider_V_APIServices.Controllers
         }
 
         [HttpPost]
-        public async Task<object> Post([FromBody] ProductDto productDto)
+        public async Task<object> Post([FromForm] ProductDto productDto, IFormFile productImage)
         {
             try
             {
@@ -83,12 +85,28 @@ namespace Lider_V_APIServices.Controllers
                     return StatusCode(401, _response);
                 }
 
-                _logger.LogInformation("Добавление модели продукта");
-                ProductDto model = await _productRepository.CreateUptateProductAsync(productDto);
-                _response.Result = model;
 
+                if (await _userManager.IsInRoleAsync(user, Constants.AdminRoleName))
+                {
+                    var productImageFileName = await SaveProductImage(productImage);
 
-                return StatusCode(200, _response);
+                    // Обновляем DTO с учетом ссылки на изображение
+                    productDto.ProductImage = productImageFileName;
+
+                    _logger.LogInformation("Добавление модели продукта");
+                    ProductDto model = await _productRepository.CreateUptateProductAsync(productDto);
+                    _response.Result = model;
+
+                    return StatusCode(200, _response);
+                }
+                else
+                {
+                    _logger.LogWarning("Данный метод доступен только для администратора");
+                    _response.IsSuccess = false;
+                    _response.Result = "Запрашиваемый ресурс недоступен";
+                    return StatusCode(403, _response);
+                }
+                
             }
             catch (Exception ex)
             {
@@ -100,8 +118,7 @@ namespace Lider_V_APIServices.Controllers
         }
 
         [HttpPut]
-        [Authorize(Roles = Constants.AdminRoleName)]
-        public async Task<object> Put([FromBody] ProductDto productDto)
+        public async Task<object> Put([FromForm] ProductDto productDto, IFormFile productImage)
         {
             try
             {
@@ -117,11 +134,26 @@ namespace Lider_V_APIServices.Controllers
                     return StatusCode(401, _response);
                 }
 
-                _logger.LogInformation("Обновление модели продукта");
-                ProductDto model = await _productRepository.CreateUptateProductAsync(productDto);
-                _response.Result = model;
+                if (await _userManager.IsInRoleAsync(user, Constants.AdminRoleName))
+                {
+                    var productImageFileName = await SaveProductImage(productImage);
 
-                return StatusCode(200, _response);
+                    // Обновляем DTO с учетом ссылки на изображение
+                    productDto.ProductImage = productImageFileName;
+
+                    _logger.LogInformation("Обновление модели продукта");
+                    ProductDto model = await _productRepository.CreateUptateProductAsync(productDto);
+                    _response.Result = model;
+
+                    return StatusCode(200, _response);
+                }
+                else
+                {
+                    _logger.LogWarning("Данный метод доступен только для администратора");
+                    _response.IsSuccess = false;
+                    _response.Result = "Запрашиваемый ресурс недоступен";
+                    return StatusCode(403, _response);
+                }
             }
             catch (Exception ex)
             {
@@ -133,7 +165,6 @@ namespace Lider_V_APIServices.Controllers
         }
 
         [HttpDelete]
-        [Authorize(Roles = Constants.AdminRoleName)]
         public async Task<object> Delete(int id)
         {
             try
@@ -150,11 +181,21 @@ namespace Lider_V_APIServices.Controllers
                     return StatusCode(401, _response);
                 }
 
-                _logger.LogInformation("Удаление модели продукта");
-                bool isSuccess = await _productRepository.DeleteProduct(id);
-                _response.Result = isSuccess;
+                if (await _userManager.IsInRoleAsync(user, Constants.AdminRoleName))
+                {
+                    _logger.LogInformation("Удаление модели продукта");
+                    bool isSuccess = await _productRepository.DeleteProduct(id);
+                    _response.Result = isSuccess;
 
-                return StatusCode(200, _response);
+                    return StatusCode(200, _response);
+                }
+                else
+                {
+                    _logger.LogWarning("Данный метод доступен только для администратора");
+                    _response.IsSuccess = false;
+                    _response.Result = "Запрашиваемый ресурс недоступен";
+                    return StatusCode(403, _response);
+                }            
             }
             catch (Exception ex)
             {
@@ -163,6 +204,26 @@ namespace Lider_V_APIServices.Controllers
                 _response.ErrorMessages = new List<string> { ex.ToString() };
                 return StatusCode(500, _response);
             }
+        }
+
+        private async Task<string> SaveProductImage(IFormFile productImage)
+        {
+            if (productImage == null || productImage.Length == 0)
+                return null;
+
+            var uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "ProductImageFiles");
+            if (!Directory.Exists(uploadsFolder))
+                Directory.CreateDirectory(uploadsFolder);
+
+            var uniqueFileName = Guid.NewGuid().ToString() + "_" + productImage.FileName;
+            var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            {
+                await productImage.CopyToAsync(fileStream);
+            }
+
+            return uniqueFileName;
         }
 
         #endregion
