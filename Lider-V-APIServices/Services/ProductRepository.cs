@@ -4,20 +4,17 @@ using Lider_V_APIServices.Models;
 using Lider_V_APIServices.Models.Dto;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
-using static System.Net.Mime.MediaTypeNames;
 namespace Lider_V_APIServices.Services
 {
     public class ProductRepository : IProductRepository
     {
         private readonly ApplicationDbContext _context;
         private IMapper _mapper;
-        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public ProductRepository(ApplicationDbContext context, IMapper mapper, IWebHostEnvironment webHostEnvironment)
+        public ProductRepository(ApplicationDbContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
-            _webHostEnvironment = webHostEnvironment;
         }
 
         #region Product model
@@ -101,33 +98,6 @@ namespace Lider_V_APIServices.Services
                 return false;
             }
         }
-
-        //private async Task<byte[]> SaveImageAsync(string imageData)
-        //{
-        //    try
-        //    {
-        //        // Декодируем строку изображения из base64 в массив байт
-        //        byte[] imageBytes = Convert.FromBase64String(imageData);
-
-        //        string uploadsFolder = "ProductImageFiles";
-
-        //        if (!Directory.Exists(uploadsFolder))
-        //        {
-        //            Directory.CreateDirectory(uploadsFolder);
-        //        }
-
-        //        string uniqueFileName = Guid.NewGuid().ToString() + ".jpg";
-        //        string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-        //        await File.WriteAllBytesAsync(filePath, imageBytes);
-
-        //        return imageBytes;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception("Ошибка при сохранении изображения", ex);
-        //    }
-        //}
 
         #endregion
 

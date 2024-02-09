@@ -25,6 +25,15 @@ namespace Lider_V_APIServices.Services
             return _mapper.Map<CategoryDto>(category);
         }
 
+        public async Task<CategoryDto> UpdateCategory(CategoryDto categoryDto)
+        {
+            Category category = _mapper.Map<CategoryDto, Category>(categoryDto);
+            _context.Categories.Update(category);
+            await _context.SaveChangesAsync();
+
+            return _mapper.Map<Category, CategoryDto>(category);
+        }
+
         public async Task<IEnumerable<CategoryDto>> GetCategoriesAsync()
         {
             List<Category> categories = await _context.Categories.ToListAsync();

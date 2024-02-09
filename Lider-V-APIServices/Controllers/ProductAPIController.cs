@@ -88,12 +88,9 @@ namespace Lider_V_APIServices.Controllers
 
                 if (await _userManager.IsInRoleAsync(user, Constants.AdminRoleName))
                 {
-                    var productImageFileName = await SaveProductImage(productImage);
-
-                    // Обновляем DTO с учетом ссылки на изображение
-                    productDto.ProductImage = productImageFileName;
-
                     _logger.LogInformation("Добавление модели продукта");
+                    var productImageFileName = await SaveProductImage(productImage);
+                    productDto.ProductImage = productImageFileName;
                     ProductDto model = await _productRepository.CreateUptateProductAsync(productDto);
                     _response.Result = model;
 

@@ -7,5 +7,6 @@ namespace Lider_V_APIServices.Models
         [Key]
         public int Id { get; set; }
         public string CategoryName { get; set; }
+        public string? CategoryImage { get; set; }
     }
 }
