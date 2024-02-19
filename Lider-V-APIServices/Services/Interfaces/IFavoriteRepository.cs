@@ -1,6 +1,6 @@
 ﻿using Lider_V_APIServices.Models.Dto;
 
-namespace Lider_V_APIServices.Services
+namespace Lider_V_APIServices.Services.Interfaces
 {
     public interface IFavoriteRepository
     {

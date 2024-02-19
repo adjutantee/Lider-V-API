@@ -2,6 +2,7 @@
 using Lider_V_APIServices.DbContexts;
 using Lider_V_APIServices.Models;
 using Lider_V_APIServices.Models.Dto;
+using Lider_V_APIServices.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Lider_V_APIServices.Services
