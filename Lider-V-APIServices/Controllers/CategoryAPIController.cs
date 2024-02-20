@@ -1,6 +1,7 @@
 ﻿using Lider_V_APIServices.Models;
 using Lider_V_APIServices.Models.Dto;
 using Lider_V_APIServices.Services;
+using Lider_V_APIServices.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -9,7 +10,6 @@ namespace Lider_V_APIServices.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize]
     public class CategoryAPIController : Controller
     {
         private readonly ICategoryRepository _categoryRepository;
@@ -32,28 +32,9 @@ namespace Lider_V_APIServices.Controllers
         {
             try
             {
-                var user = await _userManager.GetUserAsync(User);
-
-                if (user == null)
-                {
-                    _response.IsSuccess = false;
-                    _response.Result = "Пользователь не авторизован или не найден";
-                    return StatusCode(401, _response);
-                }
-
-                if (await _userManager.IsInRoleAsync(user, Constants.AdminRoleName))
-                {
-                    IEnumerable<CategoryDto> categories = await _categoryRepository.GetCategoriesAsync();
-                    _response.Result = categories;
-                    return StatusCode(200, _response);
-                }
-                else
-                {
-                    _logger.LogWarning("Данный метод доступен только для администратора");
-                    _response.IsSuccess = false;
-                    _response.Result = "Запрашиваемый ресурс недоступен";
-                    return StatusCode(403, _response);
-                }
+                IEnumerable<CategoryDto> categories = await _categoryRepository.GetCategoriesAsync();
+                _response.Result = categories;
+                return StatusCode(200, _response);
             }
             catch (Exception ex)
             {
@@ -70,15 +51,6 @@ namespace Lider_V_APIServices.Controllers
         {
             try
             {
-                var user = await _userManager.GetUserAsync(User);
-
-                if (user == null)
-                {
-                    _response.IsSuccess = false;
-                    _response.Result = "Пользователь не авторизован или не найден";
-                    return StatusCode(401, _response);
-                }
-
                 CategoryDto category = await _categoryRepository.GetCategoryByIdAsync(id);
 
                 if (category == null)
@@ -101,6 +73,7 @@ namespace Lider_V_APIServices.Controllers
             }
         }
 
+        [Authorize]
         [HttpPost("AddCategory")]
         public async Task<object> AddCategory([FromForm] CategoryDto categoryDto, IFormFile categoryImage)
         {
@@ -146,6 +119,7 @@ namespace Lider_V_APIServices.Controllers
             }
         }
 
+        [Authorize]
         [HttpPut("UpdateCategory")]
         public async Task<object> UpdateCategory([FromForm] CategoryDto categoryDto, IFormFile categoryImage)
         {
@@ -190,6 +164,7 @@ namespace Lider_V_APIServices.Controllers
             }
         }
 
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> RemoveCategory(int id)
         {

@@ -9,6 +9,7 @@
         public string ShippingAddress { get; set; }
         public string ShippingPhone { get; set; }
         public string? ShippingEmail { get; set; }
+        public string? ShippingComent { get; set; }
         public OrderStatusDto StatusDto { get; set; }
         public ICollection<OrderItemDto> OrderItemsDto { get; set; }
     }

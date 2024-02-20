@@ -10,6 +10,7 @@ namespace Lider_V_APIServices.Models.Dto
         public string? ProductDescription { get; set; }
         public string? ProductImage { get; set; }
         public string? ProductSize { get; set; }
+        public bool? ProductIsFavorite { get; set; }
         public int? ProductQuantity { get; set; }
         public int? CategoryId { get; set; }
     }
