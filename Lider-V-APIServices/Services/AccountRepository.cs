@@ -1,12 +1,10 @@
 ﻿using Lider_V_APIServices.Models;
 using Lider_V_APIServices.Services.Interfaces;
 using Microsoft.IdentityModel.Tokens;
-using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
+using Lider_V_APIServices.Services.Interfaces;
 
 namespace Lider_V_APIServices.Services
 {
@@ -34,7 +32,7 @@ namespace Lider_V_APIServices.Services
                 issuer: _configuration["JwtAuth:Issuer"],
                 audience: _configuration["JwtAuth:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(7),
+                expires: DateTime.UtcNow.AddDays(7),
                 signingCredentials: credentials
             );
 
