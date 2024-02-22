@@ -74,8 +74,6 @@ namespace Lider_V_APIServices.Controllers
         {
             try
             {
-                _logger.LogInformation("Начало добавления модели продукта");
-                _logger.LogInformation("Проверка пользователя");
                 var user = await _userManager.GetUserAsync(User);
 
                 if (user == null)
