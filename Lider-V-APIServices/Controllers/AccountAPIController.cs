@@ -175,6 +175,43 @@ namespace Lider_V_APIServices.Controllers
             }
         }
 
+        [HttpGet("GetUser")]
+        [Authorize]
+        public async Task<IActionResult> GetUser()
+        {
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Пользователь не найден";
+                    return StatusCode(404, _response);
+                }
+
+                var userDto = new
+                {
+                    user.Id,
+                    user.UserName,
+                    user.UserFirstName,
+                    user.UserLastName,
+                    user.Email,
+                    user.RegistrationDate,
+                    user.LastLoginDate
+                };
+
+                _response.Result = userDto;
+                return StatusCode(200, _response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages = new List<string> { ex.ToString() };
+                return StatusCode(500, _response);
+            }
+        }
+
         [HttpGet("GetUserById/{userId}")]
         [Authorize]
         public async Task<IActionResult> GetUserById(string userId)

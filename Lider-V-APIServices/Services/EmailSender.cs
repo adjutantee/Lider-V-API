@@ -20,7 +20,7 @@ namespace Lider_V_APIServices.Services
             using (var client = new SmtpClient())
             {
                 await client.ConnectAsync("smtp.mail.ru", 465, true);
-                await client.AuthenticateAsync("service.lider-filament@mail.ru", "nTsGmVcEhmE19gymUckY");
+                await client.AuthenticateAsync("service.lider-filament@mail.ru", "gGMKLgiTWzE2fvMFbyiE");
                 await client.SendAsync(emailMessage);
 
                 await client.DisconnectAsync(true);
