@@ -6,6 +6,10 @@ using Lider_V_APIServices.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.EntityFrameworkCore;
+using System.Text;
+using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 
 namespace Lider_V_APIServices.Controllers
 {
@@ -17,13 +21,15 @@ namespace Lider_V_APIServices.Controllers
         private IAccountRepository _accountRepository;
         private readonly ApplicationDbContext _cotnext;
         protected ResponseDto _response;
+        private readonly ApplicationDbContext _context;
 
-        public AccountAPIController(UserManager<User> userManager, IAccountRepository accountRepository, ApplicationDbContext cotnext)
+        public AccountAPIController(UserManager<User> userManager, IAccountRepository accountRepository, ApplicationDbContext cotnext, ApplicationDbContext context)
         {
             _userManager = userManager;
             _accountRepository = accountRepository;
             this._response = new ResponseDto();
             _cotnext = cotnext;
+            _context = context;
         }
 
         [HttpPost("Login")]
@@ -84,16 +90,16 @@ namespace Lider_V_APIServices.Controllers
                     }
                 }
 
-                if (string.IsNullOrWhiteSpace(register.RegisterPassword) ||
-                    register.RegisterPassword.Length < 4 ||
-                    !register.RegisterPassword.Any(char.IsUpper) ||
-                    !register.RegisterPassword.Any(char.IsDigit) ||
-                    !register.RegisterPassword.Any(char.IsSymbol))
-                {
-                    _response.IsSuccess = false;
-                    _response.Result = "Пароль должен содержать как минимум 4 символа, хотя бы одну заглавную букву, одну цифру и один специальный символ.";
-                    return StatusCode(400, _response);
-                }
+                //if (string.IsNullOrWhiteSpace(register.RegisterPassword) ||
+                //    register.RegisterPassword.Length < 4 ||
+                //    !register.RegisterPassword.Any(char.IsUpper) ||
+                //    !register.RegisterPassword.Any(char.IsDigit) ||
+                //    !register.RegisterPassword.Any(char.IsSymbol))
+                //{
+                //    _response.IsSuccess = false;
+                //    _response.Result = "Пароль должен содержать как минимум 4 символа, хотя бы одну заглавную букву, одну цифру и один специальный символ.";
+                //    return StatusCode(400, _response);
+                //}
 
 
                 var user = new User
@@ -227,6 +233,22 @@ namespace Lider_V_APIServices.Controllers
                     return StatusCode(404, _response);
                 }
 
+                //var activeOrders = _cotnext.Orders
+                //    .Where(o => o.UserId == userId && o.Status != OrderStatus.Delivered)
+                //    .ToList();
+
+                //UserInfo userInfo = new UserInfo
+                //{
+                //    UserId = user.Id,
+                //    UserName = user.UserName,
+                //    UserFirstName = user.UserFirstName,
+                //    UserLastName = user.UserLastName,
+                //    Email = user.Email,
+                //    RegistrationDate = user.RegistrationDate,
+                //    LastLoginDate = user.LastLoginDate,
+                //    Orders = activeOrders
+                //};
+
                 var userDto = new
                 {
                     user.Id,
@@ -320,6 +342,101 @@ namespace Lider_V_APIServices.Controllers
                 _response.IsSuccess = false;
                 _response.ErrorMessages = new List<string> { ex.ToString() };
                 return StatusCode(500, _response);
+            }
+        }
+
+        [HttpPost("ResetPassword")]
+        public async Task<IActionResult> ResetPassword(ForgotPasswordViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.FindByEmailAsync(model.Email);
+
+                if (user == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Данного аккаунта нет в системе";
+                    return StatusCode(404, _response);
+                }
+
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+                EmailSender emailSender = new EmailSender();
+
+                //var callBackUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/AccountAPI/ResetPasswordConfirm?userEmail={user.Email}&code={encodedToken}";
+                var callBackUrl = $"{HttpContext.Request.Scheme}://lider-filament.ru/resetpassword?userEmail={user.Email}&code={encodedToken}";
+
+                //var callBackUrl = Url.Action(
+                //    "ResetPassword",
+                //    "Account",
+                //    new
+                //    {
+                //        userId = user.Id,
+                //        code = encodedToken,
+                //    },
+                //    protocol: HttpContext.Request.Scheme);
+
+                await emailSender.SendEmailAsync(
+                    model.Email,
+                    "Сброс пароля",
+                    $"Это сообщение сгенерировано автоматически и на него не нужно отвечать. Если вы получили это сообщение по ошибке, удалите его." +
+                    $"Перейдите по ссылке чтобы подтвердить свой аккаунт: {callBackUrl}");
+
+                _response.Result = "Ссылка на сброс пароля отправлена на вашу почту.";
+                return StatusCode(200, _response);
+            }
+            else
+            {
+                _response.IsSuccess = false;
+                _response.Result = "Некорректный запрос";
+                return StatusCode(400, _response);
+            }
+        }
+
+        [HttpPost("ResetPasswordConfirm")]
+        public async Task<IActionResult> ResetPasswordConfirm(ResetPasswordViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userManager.FindByEmailAsync(model.Email);
+
+                if (user == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Данного аккаунта нет в системе";
+                    return StatusCode(400, _response);
+                }
+
+                var decodedToken = WebEncoders.Base64UrlDecode(model.Code);
+                var token = Encoding.UTF8.GetString(decodedToken);
+
+                // Проверка, совпадают ли новый пароль и подтверждение пароля
+                if (model.Password != model.ConfirmPassword)
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Новый пароль и подтверждение пароля не совпадают.";
+                    return StatusCode(400, _response);
+                }
+
+                var result = await _userManager.ResetPasswordAsync(user, token, model.Password);
+
+                if (result.Succeeded)
+                {
+                    _response.Result = "Пароль успешно изменен";
+                    return StatusCode(200, _response);
+                }
+                else
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Ошибка при изенении пароля";
+                    return StatusCode(500, _response);
+                }
+            }
+            else
+            {
+                _response.IsSuccess = false;
+                _response.Result = "Некорректный запрос";
+                return StatusCode(400, _response);
             }
         }
     }

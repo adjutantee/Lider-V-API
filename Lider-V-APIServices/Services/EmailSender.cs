@@ -1,6 +1,5 @@
 ﻿using MailKit.Net.Smtp;
 using MimeKit;
-
 namespace Lider_V_APIServices.Services
 {
     public class EmailSender
@@ -19,6 +18,8 @@ namespace Lider_V_APIServices.Services
 
             using (var client = new SmtpClient())
             {
+                client.Timeout = 100000; // Общий таймаут в миллисекундах
+
                 await client.ConnectAsync("smtp.mail.ru", 465, true);
                 await client.AuthenticateAsync("service.lider-filament@mail.ru", "gGMKLgiTWzE2fvMFbyiE");
                 await client.SendAsync(emailMessage);
