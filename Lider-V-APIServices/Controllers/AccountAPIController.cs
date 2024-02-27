@@ -196,18 +196,23 @@ namespace Lider_V_APIServices.Controllers
                     return StatusCode(404, _response);
                 }
 
-                var userDto = new
+                var activeOrders = _cotnext.Orders
+                    .Where(o => o.UserId == user.Id && o.Status != OrderStatus.Delivered)
+                    .ToList();
+
+                UserInfoDto userInfo = new UserInfoDto
                 {
-                    user.Id,
-                    user.UserName,
-                    user.UserFirstName,
-                    user.UserLastName,
-                    user.Email,
-                    user.RegistrationDate,
-                    user.LastLoginDate
+                    UserId = user.Id,
+                    UserName = user.UserName,
+                    UserFirstName = user.UserFirstName,
+                    UserLastName = user.UserLastName,
+                    Email = user.Email,
+                    RegistrationDate = user.RegistrationDate,
+                    LastLoginDate = user.LastLoginDate,
+                    Orders = activeOrders
                 };
 
-                _response.Result = userDto;
+                _response.Result = userInfo;
                 return StatusCode(200, _response);
             }
             catch (Exception ex)
@@ -233,34 +238,23 @@ namespace Lider_V_APIServices.Controllers
                     return StatusCode(404, _response);
                 }
 
-                //var activeOrders = _cotnext.Orders
-                //    .Where(o => o.UserId == userId && o.Status != OrderStatus.Delivered)
-                //    .ToList();
+                var activeOrders = _cotnext.Orders
+                    .Where(o => o.UserId == userId && o.Status != OrderStatus.Delivered)
+                    .ToList();
 
-                //UserInfo userInfo = new UserInfo
-                //{
-                //    UserId = user.Id,
-                //    UserName = user.UserName,
-                //    UserFirstName = user.UserFirstName,
-                //    UserLastName = user.UserLastName,
-                //    Email = user.Email,
-                //    RegistrationDate = user.RegistrationDate,
-                //    LastLoginDate = user.LastLoginDate,
-                //    Orders = activeOrders
-                //};
-
-                var userDto = new
+                UserInfoDto userInfo = new UserInfoDto
                 {
-                    user.Id,
-                    user.UserName,
-                    user.UserFirstName,
-                    user.UserLastName,
-                    user.Email,
-                    user.RegistrationDate,
-                    user.LastLoginDate
+                    UserId = user.Id,
+                    UserName = user.UserName,
+                    UserFirstName = user.UserFirstName,
+                    UserLastName = user.UserLastName,
+                    Email = user.Email,
+                    RegistrationDate = user.RegistrationDate,
+                    LastLoginDate = user.LastLoginDate,
+                    Orders = activeOrders
                 };
 
-                _response.Result = userDto;
+                _response.Result = userInfo;
                 return StatusCode(200, _response);
             }
             catch (Exception ex)
@@ -286,18 +280,23 @@ namespace Lider_V_APIServices.Controllers
                     return StatusCode(404, _response);
                 }
 
-                var userDto = new
+                var activeOrders = _cotnext.Orders
+                    .Where(o => o.UserId == user.Id && o.Status != OrderStatus.Delivered)
+                    .ToList();
+
+                UserInfoDto userInfo = new UserInfoDto
                 {
-                    user.Id,
-                    user.UserName,
-                    user.UserFirstName,
-                    user.UserLastName,
-                    user.Email,
-                    user.RegistrationDate,
-                    user.LastLoginDate
+                    UserId = user.Id,
+                    UserName = user.UserName,
+                    UserFirstName = user.UserFirstName,
+                    UserLastName = user.UserLastName,
+                    Email = user.Email,
+                    RegistrationDate = user.RegistrationDate,
+                    LastLoginDate = user.LastLoginDate,
+                    Orders = activeOrders
                 };
 
-                _response.Result = userDto;
+                _response.Result = userInfo;
                 return StatusCode(200, _response);
             }
             catch (Exception ex)
@@ -323,18 +322,23 @@ namespace Lider_V_APIServices.Controllers
                     return StatusCode(404, _response);
                 }
 
-                var userDto = new
+                var activeOrders = _cotnext.Orders
+                    .Where(o => o.UserId == user.Id && o.Status != OrderStatus.Delivered)
+                    .ToList();
+
+                UserInfoDto userInfo = new UserInfoDto
                 {
-                    user.Id,
-                    user.UserName,
-                    user.UserFirstName,
-                    user.UserLastName,
-                    user.Email,
-                    user.RegistrationDate,
-                    user.LastLoginDate
+                    UserId = user.Id,
+                    UserName = user.UserName,
+                    UserFirstName = user.UserFirstName,
+                    UserLastName = user.UserLastName,
+                    Email = user.Email,
+                    RegistrationDate = user.RegistrationDate,
+                    LastLoginDate = user.LastLoginDate,
+                    Orders = activeOrders
                 };
 
-                _response.Result = userDto;
+                _response.Result = userInfo;
                 return StatusCode(200, _response);
             }
             catch (Exception ex)
@@ -364,7 +368,8 @@ namespace Lider_V_APIServices.Controllers
                 EmailSender emailSender = new EmailSender();
 
                 //var callBackUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/AccountAPI/ResetPasswordConfirm?userEmail={user.Email}&code={encodedToken}";
-                var callBackUrl = $"{HttpContext.Request.Scheme}://lider-filament.ru/resetpassword?userEmail={user.Email}&code={encodedToken}";
+                var callBackUrl = $"https://lider-filament.ru/resetpassword?userEmail={user.Email}&code={encodedToken}";
+
 
                 //var callBackUrl = Url.Action(
                 //    "ResetPassword",
@@ -379,8 +384,8 @@ namespace Lider_V_APIServices.Controllers
                 await emailSender.SendEmailAsync(
                     model.Email,
                     "Сброс пароля",
-                    $"Это сообщение сгенерировано автоматически и на него не нужно отвечать. Если вы получили это сообщение по ошибке, удалите его." +
-                    $"Перейдите по ссылке чтобы подтвердить свой аккаунт: {callBackUrl}");
+                    $"Это сообщение сгенерировано автоматически и на него не нужно отвечать. Если вы получили это сообщение по ошибке, удалите его. " +
+                    $"Перейдите по ссылке чтобы сбросить свой пароль: {callBackUrl}");
 
                 _response.Result = "Ссылка на сброс пароля отправлена на вашу почту.";
                 return StatusCode(200, _response);

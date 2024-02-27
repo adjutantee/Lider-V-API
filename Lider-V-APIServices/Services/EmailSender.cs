@@ -1,4 +1,5 @@
-﻿using MailKit.Net.Smtp;
+﻿using Lider_V_APIServices.Models;
+using MailKit.Net.Smtp;
 using MimeKit;
 namespace Lider_V_APIServices.Services
 {
@@ -18,9 +19,7 @@ namespace Lider_V_APIServices.Services
 
             using (var client = new SmtpClient())
             {
-                client.Timeout = 100000; // Общий таймаут в миллисекундах
-
-                await client.ConnectAsync("smtp.mail.ru", 465, true);
+                await client.ConnectAsync("smtp.mail.ru", 2525, MailKit.Security.SecureSocketOptions.StartTls);
                 await client.AuthenticateAsync("service.lider-filament@mail.ru", "gGMKLgiTWzE2fvMFbyiE");
                 await client.SendAsync(emailMessage);
 
