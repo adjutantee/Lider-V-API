@@ -349,6 +349,81 @@ namespace Lider_V_APIServices.Controllers
             }
         }
 
+        [HttpPost("ChangeUserLogin")]
+        [Authorize]
+        public async Task<IActionResult> ChangeUserLogin(string newUserLogin)
+        {
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Данного аккаунта нет в системе";
+                    return StatusCode(404, _response);
+                }
+
+                if (newUserLogin  == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Ошибка при смене логина";
+                    return StatusCode(400, _response);
+                }
+                else
+                {
+                    user.UserName = newUserLogin;
+                    _response.Result = newUserLogin;
+                    await _context.SaveChangesAsync();
+                    return StatusCode(200, _response);
+                }
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages = new List<string> { ex.ToString() };
+                return StatusCode(500, _response);
+            }
+        }
+
+        [HttpPost("ChangeUserName")]
+        [Authorize]
+        public async Task<IActionResult> ChangeUserName(string newFirstName, string newLastName)
+        {
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Данного аккаунта нет в системе";
+                    return StatusCode(404, _response);
+                }
+
+                if (newFirstName == null || newLastName == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Ошибка при смене логина";
+                    return StatusCode(400, _response);
+                }
+                else
+                {
+                    user.UserFirstName = newFirstName;
+                    user.UserLastName = newLastName;
+                    _response.Result = newFirstName + " " + newLastName;
+                    await _context.SaveChangesAsync();
+                    return StatusCode(200, _response);
+                }
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages = new List<string> { ex.ToString() };
+                return StatusCode(500, _response);
+            }
+        }
+
         [HttpPost("ResetPassword")]
         public async Task<IActionResult> ResetPassword(ForgotPasswordViewModel model)
         {
@@ -368,7 +443,7 @@ namespace Lider_V_APIServices.Controllers
                 EmailSender emailSender = new EmailSender();
 
                 //var callBackUrl = $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/AccountAPI/ResetPasswordConfirm?userEmail={user.Email}&code={encodedToken}";
-                var callBackUrl = $"https://lider-filament.ru/resetpassword?userEmail={user.Email}&code={encodedToken}";
+                var callBackUrl = $"https://lider-filament.ru/resetpassword?&userEmail={user.Email}&code={encodedToken}";
 
 
                 //var callBackUrl = Url.Action(
