@@ -22,14 +22,16 @@ namespace Lider_V_APIServices.Controllers
         private readonly ApplicationDbContext _cotnext;
         protected ResponseDto _response;
         private readonly ApplicationDbContext _context;
+        private readonly SignInManager<User> _signInManager;
 
-        public AccountAPIController(UserManager<User> userManager, IAccountRepository accountRepository, ApplicationDbContext cotnext, ApplicationDbContext context)
+        public AccountAPIController(UserManager<User> userManager, IAccountRepository accountRepository, ApplicationDbContext cotnext, ApplicationDbContext context, SignInManager<User> signInManager)
         {
             _userManager = userManager;
             _accountRepository = accountRepository;
             this._response = new ResponseDto();
             _cotnext = cotnext;
             _context = context;
+            _signInManager = signInManager;
         }
 
         [HttpPost("Login")]
@@ -48,6 +50,15 @@ namespace Lider_V_APIServices.Controllers
                 }
                 else
                 {
+                    var isPasswordValid = await _userManager.CheckPasswordAsync(user, login.LoginPassword);
+
+                    if (!isPasswordValid)
+                    {
+                        _response.IsSuccess = false;
+                        _response.Result = "Не правильный логин или пароль";
+                        return StatusCode(400, _response);
+                    }
+
                     var token = await _accountRepository.GenerateJwtTokenByUser(user);
                     user.LastLoginDate = DateTime.UtcNow;
                     await _cotnext.SaveChangesAsync();
@@ -361,20 +372,25 @@ namespace Lider_V_APIServices.Controllers
                 {
                     _response.IsSuccess = false;
                     _response.Result = "Данного аккаунта нет в системе";
+
                     return StatusCode(404, _response);
                 }
 
-                if (newUserLogin  == null)
+                if (newUserLogin == null)
                 {
                     _response.IsSuccess = false;
                     _response.Result = "Ошибка при смене логина";
+
                     return StatusCode(400, _response);
                 }
                 else
                 {
                     user.UserName = newUserLogin;
-                    _response.Result = newUserLogin;
+                    await _userManager.UpdateAsync(user);
+                    await _signInManager.RefreshSignInAsync(user);
                     await _context.SaveChangesAsync();
+                    _response.Result = newUserLogin;
+
                     return StatusCode(200, _response);
                 }
             }
@@ -382,6 +398,90 @@ namespace Lider_V_APIServices.Controllers
             {
                 _response.IsSuccess = false;
                 _response.ErrorMessages = new List<string> { ex.ToString() };
+                return StatusCode(500, _response);
+            }
+        }
+
+        [HttpPost("ChangeUserEmail")]
+        [Authorize]
+        public async Task<IActionResult> ChangeUserEmail(string userEmail)
+        {
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+
+                if (user == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Данного аккаунта нет в системе";
+                    return StatusCode(404, _response);
+                }
+
+                if (userEmail == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Ошибка при смене почты";
+                    return StatusCode(400, _response);
+                }
+                else
+                {
+                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    var callbackUrl = $"https://lider-filament.ru/resetpassword?&userEmail={user.Email}&code={code}";
+
+                    EmailSender emailSender = new EmailSender();
+
+                    await emailSender.SendEmailAsync(userEmail, "Подтверждение аккаунта",
+                        $"Это сообщение сгенерировано автоматически и на него не нужно отвечать. Если вы получили это сообщение по ошибке, удалите его. " +
+                        $"Перейдите по ссылке чтобы подтвердить свою новую почту: {callbackUrl}");
+
+                    _response.Result = "На почту было отправлено письмо для подтверждения почты";
+
+                    return StatusCode(200, _response);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages = new List<string> { ex.ToString() };
+                return StatusCode(500, _response);
+            }
+        }
+
+        [HttpGet("ConfirmEmail")]
+        public async Task<IActionResult> ConfirmEmail(string userId, string code)
+        {
+            if (userId == null || code == null)
+            {
+                _response.IsSuccess = false;
+                _response.Result = "Неверные параметры для подтверждения email";
+
+                return StatusCode(400, _response);
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                _response.IsSuccess = false;
+                _response.Result = "Пользователь не найден";
+
+                return StatusCode(404, _response);
+            }
+
+            var result = await _userManager.ConfirmEmailAsync(user, code);
+
+            if (result.Succeeded)
+            {
+                _response.Result = "Почта успешно подтверждена";
+
+                return StatusCode(200, _response);
+            }
+            else
+            {
+                _response.IsSuccess = false;
+                _response.Result = "Ошибка при подтверждении почты";
+
                 return StatusCode(500, _response);
             }
         }
