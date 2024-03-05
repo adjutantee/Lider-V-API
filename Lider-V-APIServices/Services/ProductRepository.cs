@@ -23,13 +23,8 @@ namespace Lider_V_APIServices.Services
 
         public async Task<IEnumerable<ProductDto>> GetProductsAsync()
         {
-            Stopwatch stopwatch = Stopwatch.StartNew();
-            stopwatch.Start();
-
             List<Product> productList = await _context.Products.ToListAsync();
 
-            stopwatch.Stop();
-            Console.WriteLine($"Время выполнения метода CreateUptateProductAsync: {stopwatch.ElapsedMilliseconds} мс");
             return _mapper.Map<List<ProductDto>>(productList);
         }
 

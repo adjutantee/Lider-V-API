@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
+using System.Text.Encodings.Web;
 using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 
 namespace Lider_V_APIServices.Controllers
@@ -376,6 +377,15 @@ namespace Lider_V_APIServices.Controllers
                     return StatusCode(404, _response);
                 }
 
+                var existingUserWithEmail = await _userManager.FindByNameAsync(newUserLogin);
+
+                if (existingUserWithEmail != null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Result = "Ошибка при смене почты: указанный логин уже используется другим аккаунтом";
+                    return StatusCode(400, _response);
+                }
+
                 if (newUserLogin == null)
                 {
                     _response.IsSuccess = false;
@@ -404,7 +414,7 @@ namespace Lider_V_APIServices.Controllers
 
         [HttpPost("ChangeUserEmail")]
         [Authorize]
-        public async Task<IActionResult> ChangeUserEmail(string userEmail)
+        public async Task<IActionResult> ChangeUserEmail(string newEmail)
         {
             try
             {
@@ -417,28 +427,34 @@ namespace Lider_V_APIServices.Controllers
                     return StatusCode(404, _response);
                 }
 
-                if (userEmail == null)
+                if (string.IsNullOrEmpty(newEmail))
                 {
                     _response.IsSuccess = false;
-                    _response.Result = "Ошибка при смене почты";
+                    _response.Result = "Ошибка при смене почты: новый email не может быть пустым";
                     return StatusCode(400, _response);
                 }
-                else
+
+                var existingUserWithEmail = await _userManager.FindByEmailAsync(newEmail);
+
+                if (existingUserWithEmail != null)
                 {
-                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                    var callbackUrl = $"https://lider-filament.ru/resetpassword?&userEmail={user.Email}&code={code}";
-
-                    EmailSender emailSender = new EmailSender();
-
-                    await emailSender.SendEmailAsync(userEmail, "Подтверждение аккаунта",
-                        $"Это сообщение сгенерировано автоматически и на него не нужно отвечать. Если вы получили это сообщение по ошибке, удалите его. " +
-                        $"Перейдите по ссылке чтобы подтвердить свою новую почту: {callbackUrl}");
-
-                    _response.Result = "На почту было отправлено письмо для подтверждения почты";
-
-                    return StatusCode(200, _response);
-
+                    _response.IsSuccess = false;
+                    _response.Result = "Ошибка при смене почты: указанный email уже используется другим аккаунтом";
+                    return StatusCode(400, _response);
                 }
+
+                var code = await _userManager.GenerateChangeEmailTokenAsync(user, newEmail);
+                var callBackUrl = $"https://lider-filament.ru/={user.Email}&code={code}";
+                //var callbackUrl = Url.Action("ConfirmEmailChange", "Account", new { email = newEmail, code }, protocol: HttpContext.Request.Scheme);
+
+                EmailSender emailSender = new EmailSender();
+
+                await emailSender.SendEmailAsync(newEmail, "Подтверждение смены почты",
+                    $"Для завершения смены почты перейдите по ссылке: <a href='{HtmlEncoder.Default.Encode(callBackUrl)}'>подтвердить email</a>");
+
+                _response.Result = "На новый email было отправлено письмо для подтверждения смены почты";
+
+                return StatusCode(200, _response);
             }
             catch (Exception ex)
             {
@@ -448,10 +464,10 @@ namespace Lider_V_APIServices.Controllers
             }
         }
 
-        [HttpGet("ConfirmEmail")]
-        public async Task<IActionResult> ConfirmEmail(string userId, string code)
+        [HttpGet("ConfirmEmailChanged")]
+        public async Task<IActionResult> ConfirmEmailChanged(string email, string code)
         {
-            if (userId == null || code == null)
+            if (email == null || code == null)
             {
                 _response.IsSuccess = false;
                 _response.Result = "Неверные параметры для подтверждения email";
@@ -459,7 +475,46 @@ namespace Lider_V_APIServices.Controllers
                 return StatusCode(400, _response);
             }
 
-            var user = await _userManager.FindByIdAsync(userId);
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                _response.IsSuccess = false;
+                _response.Result = "Пользователь не найден";
+
+                return StatusCode(404, _response);
+            }
+
+            var result = await _userManager.ChangeEmailAsync(user, email, code);
+            var confirmEmail = await _userManager.ConfirmEmailAsync(user, code);
+
+            if (result.Succeeded)
+            {
+                _response.Result = "Почта успешно подтверждена";
+
+                return StatusCode(200, _response);
+            }
+            else
+            {
+                _response.IsSuccess = false;
+                _response.Result = "Ошибка при подтверждении почты";
+
+                return StatusCode(500, _response);
+            }
+        }
+
+        [HttpGet("ConfirmEmail")]
+        public async Task<IActionResult> ConfirmEmail(string email, string code)
+        {
+            if (email == null || code == null)
+            {
+                _response.IsSuccess = false;
+                _response.Result = "Неверные параметры для подтверждения email";
+
+                return StatusCode(400, _response);
+            }
+
+            var user = await _userManager.GetUserAsync(User);
 
             if (user == null)
             {
