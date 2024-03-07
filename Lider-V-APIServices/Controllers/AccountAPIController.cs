@@ -444,7 +444,7 @@ namespace Lider_V_APIServices.Controllers
                 }
 
                 var code = await _userManager.GenerateChangeEmailTokenAsync(user, newEmail);
-                var callBackUrl = $"https://lider-filament.ru/={user.Email}&code={code}";
+                var callBackUrl = $"https://lider-filament.ru/={newEmail}&code={code}";
                 //var callbackUrl = Url.Action("ConfirmEmailChange", "Account", new { email = newEmail, code }, protocol: HttpContext.Request.Scheme);
 
                 EmailSender emailSender = new EmailSender();
