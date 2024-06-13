@@ -113,7 +113,6 @@ namespace Lider_V_APIServices.Controllers
                 //    return StatusCode(400, _response);
                 //}
 
-
                 var user = new User
                 {
                     Email = register.RegisterEmail,
