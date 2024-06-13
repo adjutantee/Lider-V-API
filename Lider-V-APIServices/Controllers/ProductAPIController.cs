@@ -50,7 +50,6 @@ namespace Lider_V_APIServices.Controllers
 
         [HttpGet]
         [Route("{id}")]
-        [Authorize]
         public async Task<object> Get(int id)
         {
             try
