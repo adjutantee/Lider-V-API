@@ -69,6 +69,7 @@ namespace Lider_V_APIServices.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<object> Post([FromForm] ProductDto productDto, IFormFile productImage)
         {
             try
@@ -113,6 +114,7 @@ namespace Lider_V_APIServices.Controllers
         }
 
         [HttpPut]
+        [Authorize]
         public async Task<object> Put([FromForm] ProductDto productDto, IFormFile productImage)
         {
             try
